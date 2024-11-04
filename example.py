@@ -7,7 +7,7 @@ if pf == 'Linux':
     SDPB = ctypes.cdll.LoadLibrary("./libsdpb.so")
 elif pf == 'Windows':
     os.add_dll_directory(os.getcwd())
-    SDPB = ctypes.cdll.LoadLibrary('SDPB.dll')
+    SDPB = ctypes.cdll.LoadLibrary('SelfDualPotBKZ.dll')
 else:
     print(f"Platform {pf} is not supported.")
     sys.exit(0)
@@ -19,10 +19,11 @@ def PotLLL(b, d):
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     SDPB.PotLLL.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_double, ctypes.c_int, ctypes.c_int
-    SDPB.PotLLL(pp, d, n, m)
+    SDPB.PotLLL.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.PotLLL(pp, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = pp[i][j]
+        for j in range(N): b[i, j] = bb[i][j]
     
 
 def DualPotLLL(b, d):
@@ -32,10 +33,11 @@ def DualPotLLL(b, d):
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     SDPB.DualPotLLL.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_double, ctypes.c_int, ctypes.c_int
-    SDPB.DualPotLLL(pp, d, n, m)
+    SDPB.DualPotLLL.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.DualPotLLL(pp, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = pp[i][j]
+        for j in range(N): b[i, j] = bb[i][j]
 
 def BKZ(b, beta, d, lp):
     n, m = b.shape
@@ -44,22 +46,24 @@ def BKZ(b, beta, d, lp):
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     SDPB.BKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int, ctypes.c_int
-    SDPB.BKZ(pp, beta, d, lp, n, m)
+    SDPB.BKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.BKZ(pp, beta, d, lp, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = pp[i][j]
+        for j in range(N): b[i, j] = bb[i][j]
 
 def PotBKZ(b, beta, d):
     n, m = b.shape
 
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
+    SDPB.PotBKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     SDPB.PotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
-    SDPB.PotBKZ(pp, beta, d, n, m)
+    bb = SDPB.PotBKZ(pp, beta, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = pp[i][j]
+        for j in range(N): b[i, j] = bb[i][j]
 
 def DualPotBKZ(b, beta, d):
     n, m = b.shape
@@ -68,10 +72,11 @@ def DualPotBKZ(b, beta, d):
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     SDPB.DualPotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
-    SDPB.DualPotBKZ(pp, beta, d, n, m)
+    SDPB.DualPotBKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.DualPotBKZ(pp, beta, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = pp[i][j]
+        for j in range(N): b[i, j] = bb[i][j]
 
 def SelfDualPotBKZ(b, beta, d):
     n, m = b.shape
@@ -80,10 +85,11 @@ def SelfDualPotBKZ(b, beta, d):
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     SDPB.SelfDualPotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
-    SDPB.SelfDualPotBKZ(pp, beta, d, n, m)
+    SDPB.SelfDualPotBKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.SelfDualPotBKZ(pp, beta, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = pp[i][j]
+        for j in range(N): b[i, j] = bb[i][j]
 
 if __name__ == '__main__':
     N = 80

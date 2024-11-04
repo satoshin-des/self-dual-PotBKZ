@@ -30,11 +30,11 @@ void __PotBKZ__(MatrixXli& b, const int beta, const double d, const int n, const
 void __DualPotBKZ__(MatrixXli& b, const int beta, const double delta, const int n, const int m);
 void __SelfDualPotBKZ__(MatrixXli& b, const int beta, const double d, const int n, const int m);
 
-extern "C" void PotLLL(long **b, const double d, const int n, const int m);
-extern "C" void DualPotLLL(long **b, const double d, const int n, const int m);
-extern "C" void BKZ(long **b, const int beta, const double d, const int lp, const int n, const int m);
-extern "C" void PotBKZ(long **b, const int beta, const double d, const int n, const int m);
-extern "C" void DualPotBKZ(long **b, const int beta, const double delta, const int n, const int m);
-extern "C" void SelfDualPotBKZ(long **b, const int beta, const double d, const int n, const int m);
+extern "C" long **PotLLL(long **b, const double d, const int n, const int m);
+extern "C" long **DualPotLLL(long **b, const double d, const int n, const int m);
+extern "C" long **BKZ(long **b, const int beta, const double d, const int lp, const int n, const int m);
+extern "C" long **PotBKZ(long **b, const int beta, const double d, const int n, const int m);
+extern "C" long **DualPotBKZ(long **b, const int beta, const double delta, const int n, const int m);
+extern "C" long **SelfDualPotBKZ(long **b, const int beta, const double d, const int n, const int m);
 
 #endif // !LATTICE

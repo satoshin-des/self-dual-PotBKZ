@@ -729,7 +729,7 @@ void __SelfDualPotBKZ__(MatrixXli& b, const int beta, const double d, const int 
 }
 
 
-extern "C" void PotLLL(long **b, const double d, const int n, const int m){
+extern "C" long **PotLLL(long **b, const double d, const int n, const int m){
     int i, j;
     MatrixXli B(n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j){
@@ -738,49 +738,55 @@ extern "C" void PotLLL(long **b, const double d, const int n, const int m){
 
     __PotLLL__(B, d, n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) b[i][j] = B.coeff(i, j);
+    return b;
 }
 
 
-extern "C" void DualPotLLL(long **b, const double d, const int n, const int m){
+extern "C" long **DualPotLLL(long **b, const double d, const int n, const int m){
     int i, j;
     MatrixXli B(n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) B.coeffRef(i, j) = b[i][j];
     __DualPotLLL__(B, d, n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) b[i][j] = B.coeff(i, j);
+    return b;
 }
 
 
-extern "C" void BKZ(long **b, const int beta, const double d, const int lp, const int n, const int m){
+extern "C" long **BKZ(long **b, const int beta, const double d, const int lp, const int n, const int m){
     int i, j;
     MatrixXli B(n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) B.coeffRef(i, j) = b[i][j];
     __BKZ__(B, beta, d, lp, n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) b[i][j] = B.coeff(i, j);
+    return b;
 }
 
 
-extern "C" void PotBKZ(long **b, const int beta, const double d, const int n, const int m){
+extern "C" long **PotBKZ(long **b, const int beta, const double d, const int n, const int m){
     int i, j;
     MatrixXli B(n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) B.coeffRef(i, j) = b[i][j];
     __PotBKZ__(B, beta, d, n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) b[i][j] = B.coeff(i, j);
+    return b;
 }
 
 
-extern "C" void DualPotBKZ(long **b, const int beta, const double delta, const int n, const int m){
+extern "C" long **DualPotBKZ(long **b, const int beta, const double delta, const int n, const int m){
     int i, j;
     MatrixXli B(n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) B.coeffRef(i, j) = b[i][j];
     __DualPotBKZ__(B, beta, delta, n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) b[i][j] = B.coeff(i, j);
+    return b;
 }
 
 
-extern "C" void SelfDualPotBKZ(long **b, const int beta, const double d, const int n, const int m){
+extern "C" long **SelfDualPotBKZ(long **b, const int beta, const double d, const int n, const int m){
     int i, j;
     MatrixXli B(n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) B.coeffRef(i, j) = b[i][j];
     __SelfDualPotBKZ__(B, beta, d, n, m);
     for(i = 0; i < n; ++i) for(j = 0; j < m; ++j) b[i][j] = B.coeff(i, j);
+    return b;
 }
