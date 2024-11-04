@@ -18,6 +18,9 @@ def PotLLL(b, d):
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
+    for i in range(N):
+        for j in range(N): pp[i][j] = ctypes.c_long(b[i, j])
+
     SDPB.PotLLL.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_double, ctypes.c_int, ctypes.c_int
     SDPB.PotLLL.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
     bb = SDPB.PotLLL(pp, d, n, m)
@@ -94,7 +97,7 @@ def SelfDualPotBKZ(b, beta, d):
 if __name__ == '__main__':
     N = 80
 
-    b = np.eye(N).astype(np.int64)
+    b = np.eye(N, dtype=int)
     for i in range(N): b[i, 0] = random.randint(100, 1000)
     c = b.copy()
 
@@ -110,11 +113,11 @@ if __name__ == '__main__':
     print(np.linalg.norm(c[0]))
     print(c)
 
-    #c = b.copy()
-    #print("BKZ-reduced:")
-    #BKZ(c, 40, 0.99, 10)
-    #print(np.linalg.norm(c[0]))
-    #print(c)
+    c = b.copy()
+    print("BKZ-reduced:")
+    BKZ(c, 40, 0.99, 10)
+    print(np.linalg.norm(c[0]))
+    print(c)
 
     c = b.copy()
     print("PotBKZ-reduced:")

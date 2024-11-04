@@ -609,7 +609,7 @@ void __DualPotBKZ__(MatrixXli& b, const int beta, const double delta, const int 
 
     GSO(b, B, logB, mu, n, m);
 
-    for(int z = n, i, j = n, k, d; z > 1;){
+    for(int z = n, i, j = n, k, d; z > 2;){
         if(j == 1){++PotTour; j = n;} --j;
         k = (j - beta + 1 > 0? j - beta + 1: 0);
         d = j - k + 1;
