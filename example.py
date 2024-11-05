@@ -42,19 +42,6 @@ def DualPotLLL(b, d):
     for i in range(N):
         for j in range(N): b[i, j] = bb[i][j]
 
-def BKZ(b, beta, d, lp):
-    n, m = b.shape
-
-    ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
-    pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
-
-    SDPB.BKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int, ctypes.c_int
-    SDPB.BKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
-    bb = SDPB.BKZ(pp, beta, d, lp, n, m)
-
-    for i in range(N):
-        for j in range(N): b[i, j] = bb[i][j]
-
 def PotBKZ(b, beta, d):
     n, m = b.shape
 
@@ -110,12 +97,6 @@ if __name__ == '__main__':
     c = b.copy()
     print("Dual-PotLLL-reduced:")
     DualPotLLL(c, 0.99)
-    print(np.linalg.norm(c[0]))
-    print(c)
-
-    c = b.copy()
-    print("BKZ-reduced:")
-    BKZ(c, 40, 0.99, 10)
     print(np.linalg.norm(c[0]))
     print(c)
 
