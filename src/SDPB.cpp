@@ -30,23 +30,23 @@ static int PotTour = 0, BKZTour = 0, Tr = 0;
 static NTL::ZZ _;
 
 /// @brief Dual version of deep-insertion
-/// @param b Lattice basis
+/// @param basis Lattice basis
 /// @param n Rank of lattice
 /// @param k
 /// @param l
-void DualDeepInsertion(MatrixXli &b, const int n, const int k, const int l)
+void DualDeepInsertion(MatrixXli &basis, const int n, const int k, const int l)
 {
-    const VectorXli t = b.row(k);
+    const VectorXli t = basis.row(k);
     for (int j = k; j < l; ++j)
-        b.row(j) = b.row(j + 1);
-    b.row(l) = t;
+        basis.row(j) = basis.row(j + 1);
+    basis.row(l) = t;
 }
 
 /// @brief P.239
 /// @param NewBasis
 /// @param Basis
 /// @param x
-MatrixXli Insert(const MatrixXli b, const VectorXli x, const int n, const int m)
+MatrixXli Insert(const MatrixXli basis, const VectorXli x, const int n, const int m)
 {
     int i, j;
     double beta = 1.35135135135135135135135135135135135135135135135135;
@@ -76,54 +76,54 @@ MatrixXli Insert(const MatrixXli b, const VectorXli x, const int n, const int m)
             U.coeffRef(i, j) = NTL::to_long(tmp_base[i][j]);
 
     /* Construction of a new basis */
-    return U * b;
+    return U * basis;
 }
 
-void GSO(const MatrixXli b, VectorXld &B, MatrixXld &mu, const int n, const int m)
+void GSO(const MatrixXli basis, VectorXld &B, MatrixXld &mu, const int n, const int m)
 {
     MatrixXld GSOb(n, m);
 
     for (int i = 0, j; i < n; ++i)
     {
         mu.coeffRef(i, i) = 1.0;
-        GSOb.row(i) = b.row(i).cast<long double>();
+        GSOb.row(i) = basis.row(i).cast<long double>();
         for (j = 0; j < i; ++j)
         {
-            mu.coeffRef(i, j) = b.row(i).cast<long double>().dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
+            mu.coeffRef(i, j) = basis.row(i).cast<long double>().dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
             GSOb.row(i) -= mu.coeff(i, j) * GSOb.row(j);
         }
         B.coeffRef(i) = GSOb.row(i).dot(GSOb.row(i));
     }
 }
 
-void GSO(const MatrixXld b, VectorXld &B, MatrixXld &mu, const int n, const int m)
+void GSO(const MatrixXld basis, VectorXld &B, MatrixXld &mu, const int n, const int m)
 {
     MatrixXld GSOb(n, m);
 
     for (int i = 0, j; i < n; ++i)
     {
         mu.coeffRef(i, i) = 1.0;
-        GSOb.row(i) = b.row(i);
+        GSOb.row(i) = basis.row(i);
         for (j = 0; j < i; ++j)
         {
-            mu.coeffRef(i, j) = b.row(i).dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
+            mu.coeffRef(i, j) = basis.row(i).dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
             GSOb.row(i) -= mu.coeff(i, j) * GSOb.row(j);
         }
         B.coeffRef(i) = GSOb.row(i).dot(GSOb.row(i));
     }
 }
 
-void GSO(const MatrixXli b, VectorXld &B, VectorXld &logB, MatrixXld &mu, const int n, const int m)
+void GSO(const MatrixXli basis, VectorXld &B, VectorXld &logB, MatrixXld &mu, const int n, const int m)
 {
     MatrixXld GSOb(n, m);
 
     for (int i = 0, j; i < n; ++i)
     {
         mu.coeffRef(i, i) = 1.0;
-        GSOb.row(i) = b.row(i).cast<long double>();
+        GSOb.row(i) = basis.row(i).cast<long double>();
         for (j = 0; j < i; ++j)
         {
-            mu.coeffRef(i, j) = b.row(i).cast<long double>().dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
+            mu.coeffRef(i, j) = basis.row(i).cast<long double>().dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
             GSOb.row(i) -= mu.coeff(i, j) * GSOb.row(j);
         }
         B.coeffRef(i) = GSOb.row(i).dot(GSOb.row(i));
@@ -437,11 +437,11 @@ VectorXli DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld log
 }
 
 /// @brief PotLLL
-/// @param b lattice basis
-/// @param d Reduction parameter
+/// @param basis lattice basis
+/// @param reduction_parameter Reduction parameter
 /// @param n
 /// @param m
-void __PotLLL__(MatrixXli &b, const long double d, const int n, const int m)
+void POT_LLL(MatrixXli &basis, const long double reduction_parameter, const int n, const int m)
 {
     long double P, P_min, S;
     VectorXli t;
@@ -454,16 +454,16 @@ void __PotLLL__(MatrixXli &b, const long double d, const int n, const int m)
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
-            c[i][j] = b.coeff(i, j);
+            c[i][j] = basis.coeff(i, j);
     }
     NTL::LLL(_, c, 99, 100);
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
-            b.coeffRef(i, j) = NTL::to_long(c[i][j]);
+            basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
     }
 
-    GSO(b, B, mu, n, m);
+    GSO(basis, B, mu, n, m);
 
     for (int l = 0, l1, j, i, k, q; l < n;)
     {
@@ -473,7 +473,7 @@ void __PotLLL__(MatrixXli &b, const long double d, const int n, const int m)
             if (mu.coeff(l, j) > 0.5 || mu.coeff(l, j) < -0.5)
             {
                 q = round(mu.coeff(l, j));
-                b.row(l) -= q * b.row(j);
+                basis.row(l) -= q * basis.row(j);
                 mu.row(l).head(j + 1) -= (long double)q * mu.row(j).head(j + 1);
             }
 
@@ -490,15 +490,15 @@ void __PotLLL__(MatrixXli &b, const long double d, const int n, const int m)
             }
         }
 
-        if (d > P_min)
+        if (reduction_parameter > P_min)
         {
             // Deep insertion
-            t = b.row(l);
+            t = basis.row(l);
             for (j = l; j > k; --j)
-                b.row(j) = b.row(j - 1);
-            b.row(k) = t;
+                basis.row(j) = basis.row(j - 1);
+            basis.row(k) = t;
 
-            GSO(b, B, mu, n, m);
+            GSO(basis, B, mu, n, m);
             l = k;
         }
         else
@@ -507,11 +507,11 @@ void __PotLLL__(MatrixXli &b, const long double d, const int n, const int m)
 }
 
 /// @brief
-/// @param b
-/// @param d
+/// @param basis
+/// @param reduction_parameter
 /// @param n
 /// @param m
-void __DualPotLLL__(MatrixXli &b, const double d, const int n, const int m)
+void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int n, const int m)
 {
     double P, P_max, P_min, s;
     MatrixXld mu(n, n), nu(n, n);
@@ -526,16 +526,16 @@ void __DualPotLLL__(MatrixXli &b, const double d, const int n, const int m)
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
-            c[i][j] = b.coeff(i, j);
+            c[i][j] = basis.coeff(i, j);
     }
     NTL::LLL(_, c, 99, 100);
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
-            b.coeffRef(i, j) = NTL::to_long(c[i][j]);
+            basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
     }
 
-    GSO(b, B, mu, n, m);
+    GSO(basis, B, mu, n, m);
 
     for (int k = n - 1, j, i, l, q; k >= 0;)
     {
@@ -551,7 +551,7 @@ void __DualPotLLL__(MatrixXli &b, const double d, const int n, const int m)
             if (nu.coeff(k, j) > 0.5 || nu.coeff(k, j) < -0.5)
             {
                 q = round(nu.coeff(k, j));
-                b.row(j) += q * b.row(k);
+                basis.row(j) += q * basis.row(k);
                 nu.row(k).tail(n - j + 1) -= q * nu.row(j).tail(n - j + 1);
                 mu.row(j).head(k + 1) += q * mu.row(k).head(k + 1);
             }
@@ -576,10 +576,10 @@ void __DualPotLLL__(MatrixXli &b, const double d, const int n, const int m)
             }
         }
 
-        if (d > P_min)
+        if (reduction_parameter > P_min)
         {
-            DualDeepInsertion(b, m, k, l);
-            GSO(b, B, mu, n, m);
+            DualDeepInsertion(basis, m, k, l);
+            GSO(basis, B, mu, n, m);
             k = l;
         }
         else
@@ -588,13 +588,13 @@ void __DualPotLLL__(MatrixXli &b, const double d, const int n, const int m)
 }
 
 /// @brief PotBKZ-reduces the lattice basis
-/// @param b lattice basis
+/// @param basis lattice basis
 /// @param beta Block size
-/// @param d Reduction parameter
+/// @param reduction_parameter Reduction parameter
 /// @param n Rank of lattice
 /// @param m
 /// @param fp Files of potentials of lattice
-void __PotBKZ__(MatrixXli &b, const int beta, const double d, const int n, const int m)
+void POT_BKZ(MatrixXli &basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
     const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
@@ -603,12 +603,12 @@ void __PotBKZ__(MatrixXli &b, const int beta, const double d, const int n, const
     MatrixXld mu(n, n);
     NTL::mat_ZZ cc;
 
-    __PotLLL__(b, d, n, m);
-    GSO(b, B, logB, mu, n, m);
+    POT_LLL(basis, reduction_parameter, n, m);
+    GSO(basis, B, logB, mu, n, m);
 
     for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
-        //        printf("z = %d\n", z);
+        //        printf("z = %reduction_parameter\n", z);
         ++Tr;
 
         if (j == n2)
@@ -630,24 +630,24 @@ void __PotBKZ__(MatrixXli &b, const int beta, const double d, const int n, const
         {
             z = 0;
 
-            w = v * b.block(j, 0, kj1, m);
+            w = v * basis.block(j, 0, kj1, m);
             cc.SetDims(n + 1, m);
             for (l = 0; l < m; ++l)
             {
                 for (i = 0; i < j; ++i)
-                    cc[i][l] = b.coeffRef(i, l);
+                    cc[i][l] = basis.coeffRef(i, l);
                 cc[j][l] = w[l];
                 for (i = j + 1; i < n + 1; ++i)
-                    cc[i][l] = b.coeffRef(i - 1, l);
+                    cc[i][l] = basis.coeffRef(i - 1, l);
             }
             NTL::LLL(_, cc, 99, 100);
 
             for (i = 0; i < n; ++i)
                 for (l = 0; l < m; ++l)
-                    b.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
+                    basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
 
-            __PotLLL__(b, d, n, m);
-            GSO(b, B, logB, mu, n, m);
+            POT_LLL(basis, reduction_parameter, n, m);
+            GSO(basis, B, logB, mu, n, m);
         }
         else
             ++z;
@@ -655,13 +655,13 @@ void __PotBKZ__(MatrixXli &b, const int beta, const double d, const int n, const
 }
 
 /// @brief Dual version of PotBKZ
-/// @param b
+/// @param basis
 /// @param beta
 /// @param delta
 /// @param n
 /// @param m
 /// @param fp
-void __DualPotBKZ__(MatrixXli &b, const int beta, const double delta, const int n, const int m)
+void DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double delta, const int n, const int m)
 {
     VectorXli x;
     MatrixXli tmp_b;
@@ -671,11 +671,11 @@ void __DualPotBKZ__(MatrixXli &b, const int beta, const double delta, const int 
     MatrixXld mu(n, n), hmu, BB;
     mu.setZero();
 
-    __DualPotLLL__(b, 0.99, n, m);
+    DUAL_POT_LLL(basis, 0.99, n, m);
 
-    GSO(b, B, logB, mu, n, m);
+    GSO(basis, B, logB, mu, n, m);
 
-    for (int z = n, i, j = n, k, d; z > 2;)
+    for (int z = n, i, j = n, k, reduction_parameter; z > 2;)
     {
         if (j == 1)
         {
@@ -684,18 +684,18 @@ void __DualPotBKZ__(MatrixXli &b, const int beta, const double delta, const int 
         }
         --j;
         k = (j - beta + 1 > 0 ? j - beta + 1 : 0);
-        d = j - k + 1;
+        reduction_parameter = j - k + 1;
 
-        //        printf("z = %d\n", z);
+        //        printf("z = %reduction_parameter\n", z);
         ++Tr;
 
-        C.resize(d);
-        logC.resize(d);
-        hmu.resize(d, d);
-        DualGSO(B.segment(k, d), logB.segment(k, d), mu.block(k, k, d, d), C, logC, hmu, d, d);
+        C.resize(reduction_parameter);
+        logC.resize(reduction_parameter);
+        hmu.resize(reduction_parameter, reduction_parameter);
+        DualGSO(B.segment(k, reduction_parameter), logB.segment(k, reduction_parameter), mu.block(k, k, reduction_parameter, reduction_parameter), C, logC, hmu, reduction_parameter, reduction_parameter);
 
         // Dual Enumeration
-        x = DualPotENUM(hmu, C, logC, d);
+        x = DualPotENUM(hmu, C, logC, reduction_parameter);
 
         if (x.isZero())
         {
@@ -705,11 +705,11 @@ void __DualPotBKZ__(MatrixXli &b, const int beta, const double delta, const int 
         {
             z = n;
 
-            tmp_b = Insert(b.block(k, 0, d, m), x, d, m);
-            b.block(k, 0, d, m) = tmp_b.block(0, 0, d, m);
+            tmp_b = Insert(basis.block(k, 0, reduction_parameter, m), x, reduction_parameter, m);
+            basis.block(k, 0, reduction_parameter, m) = tmp_b.block(0, 0, reduction_parameter, m);
 
-            __PotLLL__(b, delta, n, m);
-            GSO(b, B, logB, mu, n, m);
+            POT_LLL(basis, delta, n, m);
+            GSO(basis, B, logB, mu, n, m);
         }
     }
 }
@@ -717,14 +717,14 @@ void __DualPotBKZ__(MatrixXli &b, const int beta, const double delta, const int 
 /**
  * @brief
  *
- * @param b
+ * @param basis
  * @param beta
- * @param d
+ * @param reduction_parameter
  * @param n
  * @param m
  * @param fp
  */
-void __SelfDualPotBKZ__(MatrixXli &b, const int beta, const double d, const int n, const int m)
+void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
     const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
@@ -735,9 +735,9 @@ void __SelfDualPotBKZ__(MatrixXli &b, const int beta, const double d, const int 
     VectorXld C, logC;
     MatrixXld hmu, BB;
 
-    GSO(b, B, logB, mu, n, m);
+    GSO(basis, B, logB, mu, n, m);
 
-    __DualPotLLL__(b, 0.99, n, m);
+    DUAL_POT_LLL(basis, 0.99, n, m);
 
     for (int zp = 0, jp = 0, i, k, l, kj1, zd = n, jd = n, IsPrimal = 1; zp < n - 1 && zd > 1;)
     {
@@ -767,24 +767,24 @@ void __SelfDualPotBKZ__(MatrixXli &b, const int beta, const double d, const int 
             {
                 zp = 0;
 
-                w = v * b.block(jp, 0, kj1, m);
+                w = v * basis.block(jp, 0, kj1, m);
                 cc.SetDims(n + 1, m);
                 for (l = 0; l < m; ++l)
                 {
                     for (i = 0; i < jp; ++i)
-                        cc[i][l] = b.coeffRef(i, l);
+                        cc[i][l] = basis.coeffRef(i, l);
                     cc[jp][l] = w[l];
                     for (i = jp + 1; i < n + 1; ++i)
-                        cc[i][l] = b.coeffRef(i - 1, l);
+                        cc[i][l] = basis.coeffRef(i - 1, l);
                 }
                 NTL::LLL(_, cc, 99, 100);
 
                 for (i = 0; i < n; ++i)
                     for (l = 0; l < m; ++l)
-                        b.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
+                        basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
 
-                __DualPotLLL__(b, d, n, m);
-                GSO(b, B, logB, mu, n, m);
+                DUAL_POT_LLL(basis, reduction_parameter, n, m);
+                GSO(basis, B, logB, mu, n, m);
             }
             else
                 ++zp;
@@ -821,85 +821,85 @@ void __SelfDualPotBKZ__(MatrixXli &b, const int beta, const double d, const int 
             {
                 zd = n;
 
-                tmp_b = Insert(b.block(k, 0, kj1, m), v, kj1, m);
-                b.block(k, 0, kj1, m) = tmp_b.block(0, 0, kj1, m);
+                tmp_b = Insert(basis.block(k, 0, kj1, m), v, kj1, m);
+                basis.block(k, 0, kj1, m) = tmp_b.block(0, 0, kj1, m);
 
-                __PotLLL__(b, d, n, m);
-                GSO(b, B, logB, mu, n, m);
+                POT_LLL(basis, reduction_parameter, n, m);
+                GSO(basis, B, logB, mu, n, m);
             }
         }
     }
 }
 
-extern "C" long **PotLLL(long **b, const double d, const int n, const int m)
+extern "C" long **PotLLL(long **basis, const double reduction_parameter, const int n, const int m)
 {
     int i, j;
     MatrixXli B(n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
         {
-            B.coeffRef(i, j) = b[i][j];
+            B.coeffRef(i, j) = basis[i][j];
         }
 
-    __PotLLL__(B, d, n, m);
+    POT_LLL(B, reduction_parameter, n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            b[i][j] = B.coeff(i, j);
-    return b;
+            basis[i][j] = B.coeff(i, j);
+    return basis;
 }
 
-extern "C" long **DualPotLLL(long **b, const double d, const int n, const int m)
+extern "C" long **DualPotLLL(long **basis, const double reduction_parameter, const int n, const int m)
 {
     int i, j;
     MatrixXli B(n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            B.coeffRef(i, j) = b[i][j];
-    __DualPotLLL__(B, d, n, m);
+            B.coeffRef(i, j) = basis[i][j];
+    DUAL_POT_LLL(B, reduction_parameter, n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            b[i][j] = B.coeff(i, j);
-    return b;
+            basis[i][j] = B.coeff(i, j);
+    return basis;
 }
 
-extern "C" long **PotBKZ(long **b, const int beta, const double d, const int n, const int m)
+extern "C" long **PotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
     int i, j;
     MatrixXli B(n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            B.coeffRef(i, j) = b[i][j];
-    __PotBKZ__(B, beta, d, n, m);
+            B.coeffRef(i, j) = basis[i][j];
+    POT_BKZ(B, beta, reduction_parameter, n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            b[i][j] = B.coeff(i, j);
-    return b;
+            basis[i][j] = B.coeff(i, j);
+    return basis;
 }
 
-extern "C" long **DualPotBKZ(long **b, const int beta, const double delta, const int n, const int m)
+extern "C" long **DualPotBKZ(long **basis, const int beta, const double delta, const int n, const int m)
 {
     int i, j;
     MatrixXli B(n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            B.coeffRef(i, j) = b[i][j];
-    __DualPotBKZ__(B, beta, delta, n, m);
+            B.coeffRef(i, j) = basis[i][j];
+    DUAL_POT_BKZ(B, beta, delta, n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            b[i][j] = B.coeff(i, j);
-    return b;
+            basis[i][j] = B.coeff(i, j);
+    return basis;
 }
 
-extern "C" long **SelfDualPotBKZ(long **b, const int beta, const double d, const int n, const int m)
+extern "C" long **SelfDualPotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
     int i, j;
     MatrixXli B(n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            B.coeffRef(i, j) = b[i][j];
-    __SelfDualPotBKZ__(B, beta, d, n, m);
+            B.coeffRef(i, j) = basis[i][j];
+    SELF_DUAL_POT_BKZ(B, beta, reduction_parameter, n, m);
     for (i = 0; i < n; ++i)
         for (j = 0; j < m; ++j)
-            b[i][j] = B.coeff(i, j);
-    return b;
+            basis[i][j] = B.coeff(i, j);
+    return basis;
 }
