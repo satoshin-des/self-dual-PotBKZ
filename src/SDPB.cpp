@@ -79,83 +79,85 @@ MatrixXli Insert(const MatrixXli basis, const VectorXli x, const int n, const in
     return U * basis;
 }
 
-void GSO(const MatrixXli basis, VectorXld &B, MatrixXld &mu, const int n, const int m)
+void GSO(const MatrixXli basis, VectorXld &squared_norm_of_gso_vec, MatrixXld &gso_coeff_mat, const int n, const int m)
 {
-    MatrixXld GSOb(n, m);
+    MatrixXld gso_vec_mat(n, m);
 
     for (int i = 0, j; i < n; ++i)
     {
-        mu.coeffRef(i, i) = 1.0;
-        GSOb.row(i) = basis.row(i).cast<long double>();
+        gso_coeff_mat.coeffRef(i, i) = 1.0;
+        gso_vec_mat.row(i) = basis.row(i).cast<long double>();
         for (j = 0; j < i; ++j)
         {
-            mu.coeffRef(i, j) = basis.row(i).cast<long double>().dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
-            GSOb.row(i) -= mu.coeff(i, j) * GSOb.row(j);
+            gso_coeff_mat.coeffRef(i, j) = basis.row(i).cast<long double>().dot(gso_vec_mat.row(j)) / gso_vec_mat.row(j).dot(gso_vec_mat.row(j));
+            gso_vec_mat.row(i) -= gso_coeff_mat.coeff(i, j) * gso_vec_mat.row(j);
         }
-        B.coeffRef(i) = GSOb.row(i).dot(GSOb.row(i));
+        squared_norm_of_gso_vec.coeffRef(i) = gso_vec_mat.row(i).dot(gso_vec_mat.row(i));
     }
 }
 
-void GSO(const MatrixXld basis, VectorXld &B, MatrixXld &mu, const int n, const int m)
+void GSO(const MatrixXld basis, VectorXld &squared_norm_of_gso_vec, MatrixXld &gso_coeff_mat, const int n, const int m)
 {
-    MatrixXld GSOb(n, m);
+    MatrixXld gso_vec_mat(n, m);
 
     for (int i = 0, j; i < n; ++i)
     {
-        mu.coeffRef(i, i) = 1.0;
-        GSOb.row(i) = basis.row(i);
+        gso_coeff_mat.coeffRef(i, i) = 1.0;
+        gso_vec_mat.row(i) = basis.row(i);
         for (j = 0; j < i; ++j)
         {
-            mu.coeffRef(i, j) = basis.row(i).dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
-            GSOb.row(i) -= mu.coeff(i, j) * GSOb.row(j);
+            gso_coeff_mat.coeffRef(i, j) = basis.row(i).dot(gso_vec_mat.row(j)) / gso_vec_mat.row(j).dot(gso_vec_mat.row(j));
+            gso_vec_mat.row(i) -= gso_coeff_mat.coeff(i, j) * gso_vec_mat.row(j);
         }
-        B.coeffRef(i) = GSOb.row(i).dot(GSOb.row(i));
+        squared_norm_of_gso_vec.coeffRef(i) = gso_vec_mat.row(i).dot(gso_vec_mat.row(i));
     }
 }
 
-void GSO(const MatrixXli basis, VectorXld &B, VectorXld &logB, MatrixXld &mu, const int n, const int m)
+void GSO(const MatrixXli basis, VectorXld &squared_norm_of_gso_vec, VectorXld &log_squared_norm_of_gso_vec, MatrixXld &gso_coeff_mat, const int n, const int m)
 {
-    MatrixXld GSOb(n, m);
+    MatrixXld gso_vec_mat(n, m);
 
     for (int i = 0, j; i < n; ++i)
     {
-        mu.coeffRef(i, i) = 1.0;
-        GSOb.row(i) = basis.row(i).cast<long double>();
+        gso_coeff_mat.coeffRef(i, i) = 1.0;
+        gso_vec_mat.row(i) = basis.row(i).cast<long double>();
         for (j = 0; j < i; ++j)
         {
-            mu.coeffRef(i, j) = basis.row(i).cast<long double>().dot(GSOb.row(j)) / GSOb.row(j).dot(GSOb.row(j));
-            GSOb.row(i) -= mu.coeff(i, j) * GSOb.row(j);
+            gso_coeff_mat.coeffRef(i, j) = basis.row(i).cast<long double>().dot(gso_vec_mat.row(j)) / gso_vec_mat.row(j).dot(gso_vec_mat.row(j));
+            gso_vec_mat.row(i) -= gso_coeff_mat.coeff(i, j) * gso_vec_mat.row(j);
         }
-        B.coeffRef(i) = GSOb.row(i).dot(GSOb.row(i));
-        logB.coeffRef(i) = log(B.coeff(i));
+        squared_norm_of_gso_vec.coeffRef(i) = gso_vec_mat.row(i).dot(gso_vec_mat.row(i));
+        log_squared_norm_of_gso_vec.coeffRef(i) = log(squared_norm_of_gso_vec.coeff(i));
     }
 }
 
 /// @brief Computes GSO-informations of dual-lattice basis using GSO-information of lattice
-/// @param B Squared norms of GSO-vectors
-/// @param mu GSO-coefficient mattix
-/// @param C Squared norms of dual-GSO-vectors
+/// @param squared_norm_of_gso_vec Squared norms of GSO-vectors
+/// @param gso_coeff_mat GSO-coefficient mattix
+/// @param dual_squared_norm_of_gso_vec Squared norms of dual-GSO-vectors
 /// @param hmu dual-GSO-coefficient mattix
 /// @param n
 /// @param m
-void DualGSO(const VectorXld B, const VectorXld logB, const MatrixXld mu, VectorXld &C, VectorXld &logC, MatrixXld &hmu, const int n, const int m)
+void DualGSO(const VectorXld squared_norm_of_gso_vec, const VectorXld log_squared_norm_of_gso_vec, const MatrixXld gso_coeff_mat, VectorXld &dual_squared_norm_of_gso_vec, VectorXld &logC, MatrixXld &hmu, const int n, const int m)
 {
     for (int i = 0, j; i < n; ++i)
     {
-        C.coeffRef(i) = 1.0 / B.coeff(i);
-        logC.coeffRef(i) = -logB.coeff(i);
+        dual_squared_norm_of_gso_vec.coeffRef(i) = 1.0 / squared_norm_of_gso_vec.coeff(i);
+        logC.coeffRef(i) = -log_squared_norm_of_gso_vec.coeff(i);
         for (j = i + 1; j < m; ++j)
-            hmu.coeffRef(i, j) = -mu.row(j).segment(i, j - i).dot(hmu.row(i).segment(i, j - i));
+        {
+            hmu.coeffRef(i, j) = -gso_coeff_mat.row(j).segment(i, j - i).dot(hmu.row(i).segment(i, j - i));
+        }
     }
 }
 
 /// @brief Enumerates a vector whose norm is shorter than R on the lattice
-/// @param mu GSO-coefficient matrix
-/// @param B Squared-norms of row vectors of GSO-matrix
+/// @param gso_coeff_mat GSO-coefficient matrix
+/// @param squared_norm_of_gso_vec Squared-norms of row vectors of GSO-matrix
 /// @param n Rank of lattice
 /// @param R An upper bound of enumeration
 /// @return
-VectorXli ENUM(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n, const double R)
+VectorXli ENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gso_vec, VectorXld &rho, const int n, const double R)
 {
     const int n1 = n + 1;
     int i, r[n1];
@@ -170,23 +172,29 @@ VectorXli ENUM(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int 
     Eigen::MatrixXd sigma(n1, n);
     sigma.setZero();
     for (i = 0; i < n; ++i)
+    {
         r[i] = i;
+    }
 
     for (int k = 0, last_nonzero = 0;;)
     {
         tmp = (double)v.coeff(k) - c.coeff(k);
         tmp *= tmp;
-        rho.coeffRef(k) = rho.coeff(k + 1) + tmp * B.coeff(k); // rho[k]=∥πₖ(v)∥
+        rho.coeffRef(k) = rho.coeff(k + 1) + tmp * squared_norm_of_gso_vec.coeff(k); // rho[k]=∥πₖ(v)∥
         if (rho.coeff(k) <= R)
         {
             if (k == 0)
+            {
                 return v;
+            }
             else
             {
                 --k;
                 r[k] = (r[k] > r[k + 1] ? r[k] : r[k + 1]);
                 for (i = r[k]; i > k; --i)
-                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + mu.coeff(i, k) * v.coeff(i);
+                {
+                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + gso_coeff_mat.coeff(i, k) * v.coeff(i);
+                }
                 c.coeffRef(k) = -sigma.coeff(k + 1, k);
                 v.coeffRef(k) = round(c.coeff(k));
                 w.coeffRef(k) = 1; // 小さいやつが見つかったら、変分を元に戻す
@@ -219,41 +227,41 @@ VectorXli ENUM(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int 
 }
 
 /// @brief Enumerates the shortest vector on the lattice
-/// @param mu GSO-coefficient matrix
-/// @param B Squared-norms of row vectors of GSO-matrix
+/// @param gso_coeff_mat GSO-coefficient matrix
+/// @param squared_norm_of_gso_vec Squared-norms of row vectors of GSO-matrix
 /// @param n Rank of lattice
 /// @return VectorXli the shortest vector
-VectorXli enumerate(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n)
+VectorXli enumerate(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gso_vec, VectorXld &rho, const int n)
 {
-    VectorXli enum_v(n), pre_enum_v(n);
-    enum_v.setZero();
-    pre_enum_v.setZero();
+    VectorXli enumerated_vector(n), old_enumerated_vector(n);
+    enumerated_vector.setZero();
+    old_enumerated_vector.setZero();
     VectorXld pre_rho(n + 1);
     pre_rho.setZero();
-    for (double R = B.coeff(0);;)
+    for (double R = squared_norm_of_gso_vec.coeff(0);;)
     {
         pre_rho = rho;
-        pre_enum_v = enum_v;
-        enum_v = ENUM(mu, B, rho, n, R);
-        if (enum_v.isZero())
+        old_enumerated_vector = enumerated_vector;
+        enumerated_vector = ENUM(gso_coeff_mat, squared_norm_of_gso_vec, rho, n, R);
+        if (enumerated_vector.isZero())
         {
             rho = pre_rho;
-            return pre_enum_v;
+            return old_enumerated_vector;
         }
         R *= 0.99;
     }
 }
 
 /// @brief Enumerates a short and small potential lattice vector
-/// @param mu GSO-coefficient matrix.
-/// @param B Squared norms of GSO vectors.
-/// @param logB Logarithm valude of squared norms of GSO-vectors.
+/// @param gso_coeff_mat GSO-coefficient matrix.
+/// @param squared_norm_of_gso_vec Squared norms of GSO vectors.
+/// @param log_squared_norm_of_gso_vec Logarithm valude of squared norms of GSO-vectors.
 /// @param n Rank of lattice.
 /// @return VectorXli
-VectorXli PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n)
+VectorXli PotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gso_vec, const VectorXld log_squared_norm_of_gso_vec, const int n)
 {
     int i, r[n + 1];
-    double tmp, R = logB.coeff(0), P = 0;
+    double tmp, R = log_squared_norm_of_gso_vec.coeff(0), P = 0;
     VectorXli w(n), v(n);
     w.setZero();
     v.setZero();
@@ -271,7 +279,7 @@ VectorXli PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, c
     {
         tmp = (double)v.coeff(k) - c.coeff(k);
         tmp *= tmp;
-        D.coeffRef(k) = D.coeff(k + 1) + tmp * B.coeff(k);
+        D.coeffRef(k) = D.coeff(k + 1) + tmp * squared_norm_of_gso_vec.coeff(k);
 
         if ((k + 1) * log(D.coeff(k)) + P < (k + 1) * LOG099 + R)
         {
@@ -283,7 +291,7 @@ VectorXli PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, c
                 --k;
                 r[k] = (r[k] > r[k + 1] ? r[k] : r[k + 1]);
                 for (i = r[k]; i > k; --i)
-                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + mu.coeff(i, k) * v(i);
+                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + gso_coeff_mat.coeff(i, k) * v(i);
                 c.coeffRef(k) = -sigma.coeff(k + 1, k);
                 v.coeffRef(k) = round(c.coeff(k));
                 w.coeffRef(k) = 1;
@@ -320,7 +328,7 @@ VectorXli PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, c
                         }
                     }
                     P = 0;
-                    R = logB.head(last_nonzero + 1).array().sum();
+                    R = log_squared_norm_of_gso_vec.head(last_nonzero + 1).array().sum();
                 }
                 else
                 {
@@ -333,10 +341,10 @@ VectorXli PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, c
     }
 }
 
-VectorXli DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n)
+VectorXli DualPotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gso_vec, const VectorXld log_squared_norm_of_gso_vec, const int n)
 {
     int i, r[n + 1];
-    double tmp, R = logB.coeff(0), P = 0;
+    double tmp, R = log_squared_norm_of_gso_vec.coeff(0), P = 0;
     VectorXli w(n), v(n);
     w.setZero();
     v.setZero();
@@ -349,12 +357,14 @@ VectorXli DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld log
     v.coeffRef(0) = 1;
 
     for (i = 0; i <= n; ++i)
+    {
         r[i] = i;
+    }
     for (int k = 0, last_nonzero = 0;;)
     {
         tmp = (double)v.coeff(k) - c.coeff(k);
         tmp *= tmp;
-        D.coeffRef(k) = D.coeff(k + 1) + tmp * B.coeff(k);
+        D.coeffRef(k) = D.coeff(k + 1) + tmp * squared_norm_of_gso_vec.coeff(k);
 
         if (last_nonzero == 0)
         {
@@ -377,7 +387,7 @@ VectorXli DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld log
             P += tmp;
         }
 
-        R = logB.head(last_nonzero + 1).array().sum();
+        R = log_squared_norm_of_gso_vec.head(last_nonzero + 1).array().sum();
         if (LOG099 + P > R)
         {
             if (k == 0)
@@ -388,7 +398,7 @@ VectorXli DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld log
                 --k;
                 r[k] = (r[k] > r[k + 1] ? r[k] : r[k + 1]);
                 for (i = r[k]; i > k; --i)
-                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + mu.coeff(i, k) * v(i);
+                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + gso_coeff_mat.coeff(i, k) * v(i);
                 c.coeffRef(k) = -sigma.coeff(k + 1, k);
                 v.coeffRef(k) = round(c.coeff(k));
                 w.coeffRef(k) = 1;
@@ -445,10 +455,10 @@ void POT_LLL(MatrixXli &basis, const long double reduction_parameter, const int 
 {
     long double P, P_min, S;
     VectorXli t;
-    VectorXld B(n);
+    VectorXld squared_norm_of_gso_vec(n);
     NTL::mat_ZZ c;
     c.SetDims(n, m);
-    MatrixXld mu(n, n);
+    MatrixXld gso_coeff_mat(n, n);
 
     // LLL基底簡約
     for (int i = 0, j; i < n; ++i)
@@ -463,26 +473,26 @@ void POT_LLL(MatrixXli &basis, const long double reduction_parameter, const int 
             basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
     }
 
-    GSO(basis, B, mu, n, m);
+    GSO(basis, squared_norm_of_gso_vec, gso_coeff_mat, n, m);
 
     for (int l = 0, l1, j, i, k, q; l < n;)
     {
         l1 = l - 1;
         // 部分サイズ基底簡約
         for (j = l1; j > -1; --j)
-            if (mu.coeff(l, j) > 0.5 || mu.coeff(l, j) < -0.5)
+            if (gso_coeff_mat.coeff(l, j) > 0.5 || gso_coeff_mat.coeff(l, j) < -0.5)
             {
-                q = round(mu.coeff(l, j));
+                q = round(gso_coeff_mat.coeff(l, j));
                 basis.row(l) -= q * basis.row(j);
-                mu.row(l).head(j + 1) -= (long double)q * mu.row(j).head(j + 1);
+                gso_coeff_mat.row(l).head(j + 1) -= (long double)q * gso_coeff_mat.row(j).head(j + 1);
             }
 
         P = P_min = 1.0;
         k = 0;
         for (j = l1; j >= 0; --j)
         {
-            S = (mu.row(l).segment(j, l - j).array().square() * B.segment(j, l - j).array()).sum();
-            P *= (B.coeff(l) + S) / B.coeff(j);
+            S = (gso_coeff_mat.row(l).segment(j, l - j).array().square() * squared_norm_of_gso_vec.segment(j, l - j).array()).sum();
+            P *= (squared_norm_of_gso_vec.coeff(l) + S) / squared_norm_of_gso_vec.coeff(j);
             if (P < P_min)
             {
                 k = j;
@@ -498,7 +508,7 @@ void POT_LLL(MatrixXli &basis, const long double reduction_parameter, const int 
                 basis.row(j) = basis.row(j - 1);
             basis.row(k) = t;
 
-            GSO(basis, B, mu, n, m);
+            GSO(basis, squared_norm_of_gso_vec, gso_coeff_mat, n, m);
             l = k;
         }
         else
@@ -514,11 +524,11 @@ void POT_LLL(MatrixXli &basis, const long double reduction_parameter, const int 
 void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int n, const int m)
 {
     double P, P_max, P_min, s;
-    MatrixXld mu(n, n), nu(n, n);
-    mu.setZero();
+    MatrixXld gso_coeff_mat(n, n), nu(n, n);
+    gso_coeff_mat.setZero();
     nu.setZero();
-    VectorXld B(n);
-    B.setZero();
+    VectorXld squared_norm_of_gso_vec(n);
+    squared_norm_of_gso_vec.setZero();
     NTL::mat_ZZ c;
     c.SetDims(n, m);
 
@@ -535,7 +545,7 @@ void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int 
             basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
     }
 
-    GSO(basis, B, mu, n, m);
+    GSO(basis, squared_norm_of_gso_vec, gso_coeff_mat, n, m);
 
     for (int k = n - 1, j, i, l, q; k >= 0;)
     {
@@ -546,14 +556,14 @@ void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int 
         {
             nu.coeffRef(k, j) = 0;
             for (i = k; i < j; ++i)
-                nu.coeffRef(k, j) -= mu.coeff(j, i) * nu.coeff(k, i);
+                nu.coeffRef(k, j) -= gso_coeff_mat.coeff(j, i) * nu.coeff(k, i);
 
             if (nu.coeff(k, j) > 0.5 || nu.coeff(k, j) < -0.5)
             {
                 q = round(nu.coeff(k, j));
                 basis.row(j) += q * basis.row(k);
                 nu.row(k).tail(n - j + 1) -= q * nu.row(j).tail(n - j + 1);
-                mu.row(j).head(k + 1) += q * mu.row(k).head(k + 1);
+                gso_coeff_mat.row(j).head(k + 1) += q * gso_coeff_mat.row(k).head(k + 1);
             }
         }
 
@@ -565,8 +575,8 @@ void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int 
         {
             s = 0.0;
             for (i = k; i <= j; ++i)
-                s += nu.coeff(k, i) * nu.coeff(k, i) / B.coeff(i);
-            P *= B.coeff(j);
+                s += nu.coeff(k, i) * nu.coeff(k, i) / squared_norm_of_gso_vec.coeff(i);
+            P *= squared_norm_of_gso_vec.coeff(j);
             P *= s;
 
             if (P < P_min)
@@ -579,7 +589,7 @@ void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int 
         if (reduction_parameter > P_min)
         {
             DualDeepInsertion(basis, m, k, l);
-            GSO(basis, B, mu, n, m);
+            GSO(basis, squared_norm_of_gso_vec, gso_coeff_mat, n, m);
             k = l;
         }
         else
@@ -599,12 +609,12 @@ void POT_BKZ(MatrixXli &basis, const int beta, const double reduction_parameter,
     const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
     MatrixXli tmp_b(n, n);
-    VectorXld B(n), logB(n);
-    MatrixXld mu(n, n);
+    VectorXld squared_norm_of_gso_vec(n), log_squared_norm_of_gso_vec(n);
+    MatrixXld gso_coeff_mat(n, n);
     NTL::mat_ZZ cc;
 
     POT_LLL(basis, reduction_parameter, n, m);
-    GSO(basis, B, logB, mu, n, m);
+    GSO(basis, squared_norm_of_gso_vec, log_squared_norm_of_gso_vec, gso_coeff_mat, n, m);
 
     for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
@@ -624,7 +634,7 @@ void POT_BKZ(MatrixXli &basis, const int beta, const double reduction_parameter,
         v.setZero();
 
         /* enumerate a shortest vector*/
-        v = PotENUM(mu.block(j, j, kj1, kj1), B.segment(j, kj1), logB.segment(j, kj1), kj1);
+        v = PotENUM(gso_coeff_mat.block(j, j, kj1, kj1), squared_norm_of_gso_vec.segment(j, kj1), log_squared_norm_of_gso_vec.segment(j, kj1), kj1);
 
         if (!v.isZero())
         {
@@ -647,7 +657,7 @@ void POT_BKZ(MatrixXli &basis, const int beta, const double reduction_parameter,
                     basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
 
             POT_LLL(basis, reduction_parameter, n, m);
-            GSO(basis, B, logB, mu, n, m);
+            GSO(basis, squared_norm_of_gso_vec, log_squared_norm_of_gso_vec, gso_coeff_mat, n, m);
         }
         else
             ++z;
@@ -665,17 +675,17 @@ void DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double delta, const in
 {
     VectorXli x;
     MatrixXli tmp_b;
-    VectorXld B(n), logB(n), C, logC;
-    B.setZero();
-    logB.setZero();
-    MatrixXld mu(n, n), hmu, BB;
-    mu.setZero();
+    VectorXld squared_norm_of_gso_vec(n), log_squared_norm_of_gso_vec(n), dual_squared_norm_of_gso_vec, logC;
+    squared_norm_of_gso_vec.setZero();
+    log_squared_norm_of_gso_vec.setZero();
+    MatrixXld gso_coeff_mat(n, n), hmu, BB;
+    gso_coeff_mat.setZero();
 
     DUAL_POT_LLL(basis, 0.99, n, m);
 
-    GSO(basis, B, logB, mu, n, m);
+    GSO(basis, squared_norm_of_gso_vec, log_squared_norm_of_gso_vec, gso_coeff_mat, n, m);
 
-    for (int z = n, i, j = n, k, reduction_parameter; z > 2;)
+    for (int z = n, i, j = n, k, dim_of_block_lattice; z > 2;)
     {
         if (j == 1)
         {
@@ -684,18 +694,18 @@ void DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double delta, const in
         }
         --j;
         k = (j - beta + 1 > 0 ? j - beta + 1 : 0);
-        reduction_parameter = j - k + 1;
+        dim_of_block_lattice = j - k + 1;
 
-        //        printf("z = %reduction_parameter\n", z);
+        //        printf("z = %dim_of_block_lattice\n", z);
         ++Tr;
 
-        C.resize(reduction_parameter);
-        logC.resize(reduction_parameter);
-        hmu.resize(reduction_parameter, reduction_parameter);
-        DualGSO(B.segment(k, reduction_parameter), logB.segment(k, reduction_parameter), mu.block(k, k, reduction_parameter, reduction_parameter), C, logC, hmu, reduction_parameter, reduction_parameter);
+        dual_squared_norm_of_gso_vec.resize(dim_of_block_lattice);
+        logC.resize(dim_of_block_lattice);
+        hmu.resize(dim_of_block_lattice, dim_of_block_lattice);
+        DualGSO(squared_norm_of_gso_vec.segment(k, dim_of_block_lattice), log_squared_norm_of_gso_vec.segment(k, dim_of_block_lattice), gso_coeff_mat.block(k, k, dim_of_block_lattice, dim_of_block_lattice), dual_squared_norm_of_gso_vec, logC, hmu, dim_of_block_lattice, dim_of_block_lattice);
 
         // Dual Enumeration
-        x = DualPotENUM(hmu, C, logC, reduction_parameter);
+        x = DualPotENUM(hmu, dual_squared_norm_of_gso_vec, logC, dim_of_block_lattice);
 
         if (x.isZero())
         {
@@ -705,11 +715,11 @@ void DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double delta, const in
         {
             z = n;
 
-            tmp_b = Insert(basis.block(k, 0, reduction_parameter, m), x, reduction_parameter, m);
-            basis.block(k, 0, reduction_parameter, m) = tmp_b.block(0, 0, reduction_parameter, m);
+            tmp_b = Insert(basis.block(k, 0, dim_of_block_lattice, m), x, dim_of_block_lattice, m);
+            basis.block(k, 0, dim_of_block_lattice, m) = tmp_b.block(0, 0, dim_of_block_lattice, m);
 
             POT_LLL(basis, delta, n, m);
-            GSO(basis, B, logB, mu, n, m);
+            GSO(basis, squared_norm_of_gso_vec, log_squared_norm_of_gso_vec, gso_coeff_mat, n, m);
         }
     }
 }
@@ -729,13 +739,13 @@ void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_
     const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
     MatrixXli tmp_b(n, n);
-    VectorXld B(n), logB(n);
-    MatrixXld mu(n, n);
+    VectorXld squared_norm_of_gso_vec(n), log_squared_norm_of_gso_vec(n);
+    MatrixXld gso_coeff_mat(n, n);
     NTL::mat_ZZ cc;
-    VectorXld C, logC;
+    VectorXld dual_squared_norm_of_gso_vec, logC;
     MatrixXld hmu, BB;
 
-    GSO(basis, B, logB, mu, n, m);
+    GSO(basis, squared_norm_of_gso_vec, log_squared_norm_of_gso_vec, gso_coeff_mat, n, m);
 
     DUAL_POT_LLL(basis, 0.99, n, m);
 
@@ -761,7 +771,7 @@ void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_
             v.setZero();
 
             /* enumerate a shortest vector*/
-            v = PotENUM(mu.block(jp, jp, kj1, kj1), B.segment(jp, kj1), logB.segment(jp, kj1), kj1);
+            v = PotENUM(gso_coeff_mat.block(jp, jp, kj1, kj1), squared_norm_of_gso_vec.segment(jp, kj1), log_squared_norm_of_gso_vec.segment(jp, kj1), kj1);
 
             if (!v.isZero())
             {
@@ -784,7 +794,7 @@ void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_
                         basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
 
                 DUAL_POT_LLL(basis, reduction_parameter, n, m);
-                GSO(basis, B, logB, mu, n, m);
+                GSO(basis, squared_norm_of_gso_vec, log_squared_norm_of_gso_vec, gso_coeff_mat, n, m);
             }
             else
                 ++zp;
@@ -805,13 +815,13 @@ void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_
             k = (jd - beta + 1 > 0 ? jd - beta + 1 : 0);
             kj1 = jd - k + 1;
 
-            C.resize(kj1);
+            dual_squared_norm_of_gso_vec.resize(kj1);
             logC.resize(kj1);
             hmu.resize(kj1, kj1);
-            DualGSO(B.segment(k, kj1), logB.segment(k, kj1), mu.block(k, k, kj1, kj1), C, logC, hmu, kj1, kj1);
+            DualGSO(squared_norm_of_gso_vec.segment(k, kj1), log_squared_norm_of_gso_vec.segment(k, kj1), gso_coeff_mat.block(k, k, kj1, kj1), dual_squared_norm_of_gso_vec, logC, hmu, kj1, kj1);
 
             // Dual Enumeration
-            v = DualPotENUM(hmu, C, logC, kj1);
+            v = DualPotENUM(hmu, dual_squared_norm_of_gso_vec, logC, kj1);
 
             if (v.isZero())
             {
@@ -825,7 +835,7 @@ void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_
                 basis.block(k, 0, kj1, m) = tmp_b.block(0, 0, kj1, m);
 
                 POT_LLL(basis, reduction_parameter, n, m);
-                GSO(basis, B, logB, mu, n, m);
+                GSO(basis, squared_norm_of_gso_vec, log_squared_norm_of_gso_vec, gso_coeff_mat, n, m);
             }
         }
     }
