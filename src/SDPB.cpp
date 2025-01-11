@@ -13,7 +13,7 @@
 #include <random>
 #include <algorithm>
 #include <vector>
-#include <omp.h>
+#include <cmath>
 
 // External libraries
 #include <eigen3/Eigen/Dense>
@@ -26,7 +26,6 @@
 
 #define LOG099 -0.010050335853501441183548857558547706085515007674629873378
 
-static int PotTour = 0, BKZTour = 0, Tr = 0;
 static NTL::ZZ _;
 
 /// @brief Dual version of deep-insertion
@@ -176,12 +175,12 @@ VectorXli ENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gs
     const int n1 = n + 1;
     int i, r[n1];
     double tmp;
-    VectorXli w(n), v(n);
-    w.setZero();
+    VectorXli weight(n), v(n);
+    weight.setZero();
     v.setZero();
-    v.coeffRef(0) = 1; // w: ジグザグに動く変分
-    Eigen::VectorXd c(n);
-    c.setZero();
+    v.coeffRef(0) = 1;
+    Eigen::VectorXd center(n);
+    center.setZero();
     rho.setZero();
     Eigen::MatrixXd sigma(n1, n);
     sigma.setZero();
@@ -192,7 +191,7 @@ VectorXli ENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gs
 
     for (int k = 0, last_nonzero = 0;;)
     {
-        tmp = static_cast<double>(v.coeff(k)) - c.coeff(k);
+        tmp = static_cast<double>(v.coeff(k)) - center.coeff(k);
         tmp *= tmp;
         rho.coeffRef(k) = rho.coeff(k + 1) + tmp * squared_norm_of_gso_vec.coeff(k); // rho[k]=∥πₖ(v)∥
         if (rho.coeff(k) <= enumeration_upper_bound)
@@ -209,9 +208,9 @@ VectorXli ENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gs
                 {
                     sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + gso_coeff_mat.coeff(i, k) * v.coeff(i);
                 }
-                c.coeffRef(k) = -sigma.coeff(k + 1, k);
-                v.coeffRef(k) = round(c.coeff(k));
-                w.coeffRef(k) = 1; // 小さいやつが見つかったら、変分を元に戻す
+                center.coeffRef(k) = -sigma.coeff(k + 1, k);
+                v.coeffRef(k) = round(center.coeff(k));
+                weight.coeffRef(k) = 1; // 小さいやつが見つかったら、変分を元に戻す
             }
         }
         else
@@ -232,8 +231,8 @@ VectorXli ENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of_gs
                 }
                 else
                 {
-                    v.coeff(k) > c.coeff(k) ? v.coeffRef(k) -= w.coeff(k) : v.coeffRef(k) += w.coeff(k);
-                    ++w.coeffRef(k);
+                    v.coeff(k) > center.coeff(k) ? v.coeffRef(k) -= weight.coeff(k) : v.coeffRef(k) += weight.coeff(k);
+                    ++weight.coeffRef(k);
                 }
             }
         }
@@ -276,11 +275,11 @@ VectorXli PotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of
 {
     int i, r[n + 1];
     double tmp, enumeration_upper_bound = log_squared_norm_of_gso_vec.coeff(0), P = 0;
-    VectorXli w(n), v(n);
-    w.setZero();
+    VectorXli weight(n), v(n);
+    weight.setZero();
     v.setZero();
-    Eigen::VectorXd c(n), D(n + 1);
-    c.setZero();
+    Eigen::VectorXd center(n), D(n + 1);
+    center.setZero();
     D.setZero();
     Eigen::MatrixXd sigma(n + 1, n);
     sigma.setZero();
@@ -293,7 +292,7 @@ VectorXli PotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of
     }
     for (int k = 0, last_nonzero = 0;;)
     {
-        tmp = (double)v.coeff(k) - c.coeff(k);
+        tmp = static_cast<double>(v.coeff(k)) - center.coeff(k);
         tmp *= tmp;
         D.coeffRef(k) = D.coeff(k + 1) + tmp * squared_norm_of_gso_vec.coeff(k);
 
@@ -312,9 +311,9 @@ VectorXli PotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of
                 {
                     sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + gso_coeff_mat.coeff(i, k) * v(i);
                 }
-                c.coeffRef(k) = -sigma.coeff(k + 1, k);
-                v.coeffRef(k) = round(c.coeff(k));
-                w.coeffRef(k) = 1;
+                center.coeffRef(k) = -sigma.coeff(k + 1, k);
+                v.coeffRef(k) = round(center.coeff(k));
+                weight.coeffRef(k) = 1;
             }
         }
         else
@@ -352,8 +351,8 @@ VectorXli PotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_norm_of
                 }
                 else
                 {
-                    v.coeff(k) > c.coeff(k) ? v.coeffRef(k) -= w.coeff(k) : v.coeffRef(k) += w.coeff(k);
-                    ++w.coeffRef(k);
+                    v.coeff(k) > center.coeff(k) ? v.coeffRef(k) -= weight.coeff(k) : v.coeffRef(k) += weight.coeff(k);
+                    ++weight.coeffRef(k);
                     P -= log(D.coeff(k));
                 }
             }
@@ -365,11 +364,11 @@ VectorXli DualPotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_nor
 {
     int i, r[n + 1];
     double tmp, enumeration_upper_bound = log_squared_norm_of_gso_vec.coeff(0), P = 0;
-    VectorXli w(n), v(n);
-    w.setZero();
+    VectorXli weight(n), v(n);
+    weight.setZero();
     v.setZero();
-    Eigen::VectorXd c(n), D(n + 1);
-    c.setZero();
+    Eigen::VectorXd center(n), D(n + 1);
+    center.setZero();
     D.setZero();
     Eigen::MatrixXd sigma(n + 1, n);
     sigma.setZero();
@@ -382,7 +381,7 @@ VectorXli DualPotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_nor
     }
     for (int k = 0, last_nonzero = 0;;)
     {
-        tmp = static_cast<double>(v.coeff(k)) - c.coeff(k);
+        tmp = static_cast<double>(v.coeff(k)) - center.coeff(k);
         tmp *= tmp;
         D.coeffRef(k) = D.coeff(k + 1) + tmp * squared_norm_of_gso_vec.coeff(k);
 
@@ -423,9 +422,9 @@ VectorXli DualPotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_nor
                 {
                     sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + gso_coeff_mat.coeff(i, k) * v(i);
                 }
-                c.coeffRef(k) = -sigma.coeff(k + 1, k);
-                v.coeffRef(k) = round(c.coeff(k));
-                w.coeffRef(k) = 1;
+                center.coeffRef(k) = -sigma.coeff(k + 1, k);
+                v.coeffRef(k) = round(center.coeff(k));
+                weight.coeffRef(k) = 1;
             }
         }
         else
@@ -461,8 +460,8 @@ VectorXli DualPotENUM(const MatrixXld gso_coeff_mat, const VectorXld squared_nor
                 }
                 else
                 {
-                    v.coeff(k) > c.coeff(k) ? v.coeffRef(k) -= w.coeff(k) : v.coeffRef(k) += w.coeff(k);
-                    ++w.coeffRef(k);
+                    v.coeff(k) > center.coeff(k) ? v.coeffRef(k) -= weight.coeff(k) : v.coeffRef(k) += weight.coeff(k);
+                    ++weight.coeffRef(k);
                     P -= log(D.coeff(k));
                 }
             }
@@ -488,13 +487,17 @@ void POT_LLL(MatrixXli &basis, const long double reduction_parameter, const int 
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
+        {
             c[i][j] = basis.coeff(i, j);
+        }
     }
     NTL::LLL(_, c, 99, 100);
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
+        {
             basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
+        }
     }
 
     GSO(basis, squared_norm_of_gso_vec, gso_coeff_mat, n, m);
@@ -529,14 +532,18 @@ void POT_LLL(MatrixXli &basis, const long double reduction_parameter, const int 
             // Deep insertion
             t = basis.row(l);
             for (j = l; j > k; --j)
+            {
                 basis.row(j) = basis.row(j - 1);
+            }
             basis.row(k) = t;
 
             GSO(basis, squared_norm_of_gso_vec, gso_coeff_mat, n, m);
             l = k;
         }
         else
+        {
             ++l;
+        }
     }
 }
 
@@ -560,13 +567,17 @@ void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int 
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
+        {
             c[i][j] = basis.coeff(i, j);
+        }
     }
     NTL::LLL(_, c, 99, 100);
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
+        {
             basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
+        }
     }
 
     GSO(basis, squared_norm_of_gso_vec, gso_coeff_mat, n, m);
@@ -590,8 +601,6 @@ void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int 
                 gso_coeff_mat.row(j).head(k + 1) += q * gso_coeff_mat.row(k).head(k + 1);
             }
         }
-
-        // Potential
 
         P = P_min = 1.0;
         l = n - 1;
@@ -617,7 +626,9 @@ void DUAL_POT_LLL(MatrixXli &basis, const double reduction_parameter, const int 
             k = l;
         }
         else
+        {
             --k;
+        }
     }
 }
 
@@ -642,14 +653,9 @@ void POT_BKZ(MatrixXli &basis, const int beta, const double reduction_parameter,
 
     for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
-        //        printf("z = %reduction_parameter\n", z);
-        ++Tr;
-
         if (j == n2)
         {
             j = 0;
-            ++PotTour;
-            ++Tr;
         }
         ++j;
         k = (j + beta - 1 < n1 ? j + beta - 1 : n1);
@@ -713,15 +719,11 @@ void DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double delta, const in
     {
         if (j == 1)
         {
-            ++PotTour;
             j = n;
         }
         --j;
-        k = (j - beta + 1 > 0 ? j - beta + 1 : 0);
+        k = std::max(j - beta + 1, 0);
         dim_of_block_lattice = j - k + 1;
-
-        //        printf("z = %dim_of_block_lattice\n", z);
-        ++Tr;
 
         dual_squared_norm_of_gso_vec.resize(dim_of_block_lattice);
         dual_log_squared_norm_of_gso_vec.resize(dim_of_block_lattice);
@@ -783,7 +785,6 @@ void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_
             if (jp == n2)
             {
                 jp = 0;
-                ++PotTour;
                 is_primal_part = 0;
             }
             ++jp;
@@ -831,7 +832,6 @@ void SELF_DUAL_POT_BKZ(MatrixXli &basis, const int beta, const double reduction_
         {
             if (jd == 1)
             {
-                ++PotTour;
                 jd = n;
                 is_primal_part = 1;
             }
