@@ -1,5 +1,5 @@
-#ifndef LATTICE
-#define LATTICE
+#ifndef SDPB_HPP
+#define SDPB_HPP
 
 #include <iostream>
 #include <eigen3/Eigen/Dense>
@@ -31,4 +31,4 @@ extern "C" long **PotBKZ(long **basis, const int beta, const double reduction_pa
 extern "C" long **DualPotBKZ(long **basis, const int beta, const double delta, const int n, const int m);
 extern "C" long **SelfDualPotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m);
 
-#endif // !LATTICE
+#endif // !SDPB_HPP
