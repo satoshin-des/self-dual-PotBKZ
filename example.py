@@ -4,7 +4,7 @@ import numpy as np
 pf = platform.system()
 
 if pf == 'Linux':
-    SDPB = ctypes.cdll.LoadLibrary("./libsdpb.so")
+    SDPB = ctypes.cdll.LoadLibrary("./SelfDualPotBKZ.so")
 elif pf == 'Windows':
     os.add_dll_directory(os.getcwd())
     SDPB = ctypes.cdll.LoadLibrary('SelfDualPotBKZ.dll')
