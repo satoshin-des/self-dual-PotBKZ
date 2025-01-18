@@ -3,7 +3,9 @@ import numpy as np
 
 pf = platform.system()
 
-N = int(input("lattice dimension = "))
+#N = int(input("lattice dimension = "))
+print("lattice dimension = ")
+N = 90
 
 if pf == 'Linux':
     SDPB = ctypes.cdll.LoadLibrary("./SelfDualPotBKZ.so")
@@ -127,7 +129,7 @@ if __name__ == '__main__':
 
     c = b.copy()
     print("Dual-PotBKZ-reduced:")
-    DualPotBKZ(c, 40, 0.99)
+    #DualPotBKZ(c, 40, 0.99)
     print(np.linalg.norm(c[0]))
     print(c)
 
@@ -136,3 +138,5 @@ if __name__ == '__main__':
     SelfDualPotBKZ(c, 40, 0.99)
     print(np.linalg.norm(c[0]))
     print(c)
+    
+    

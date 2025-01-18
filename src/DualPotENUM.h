@@ -3,15 +3,15 @@
 
 #include "Lattice.h"
 
-inline VectorXli Lattice::DualPotENUM(const MatrixXld _gso_coeff_mat, const VectorXld _squared_norm_of_gso_vec, const VectorXld _log_squared_norm_of_gso_vec, const int n)
+inline VectorXli Lattice::DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n)
 {
     int i, r[n + 1];
-    double tmp, enumeration_upper_bound = _log_squared_norm_of_gso_vec.coeff(0), P = 0;
-    VectorXli weight(n), v(n);
-    weight.setZero();
+    double tmp, R = logB.coeff(0), P = 0;
+    VectorXli w(n), v(n);
+    w.setZero();
     v.setZero();
-    Eigen::VectorXd center(n), D(n + 1);
-    center.setZero();
+    Eigen::VectorXd c(n), D(n + 1);
+    c.setZero();
     D.setZero();
     Eigen::MatrixXd sigma(n + 1, n);
     sigma.setZero();
@@ -19,14 +19,12 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld _gso_coeff_mat, const Vect
     v.coeffRef(0) = 1;
 
     for (i = 0; i <= n; ++i)
-    {
         r[i] = i;
-    }
     for (int k = 0, last_nonzero = 0;;)
     {
-        tmp = static_cast<double>(v.coeff(k)) - center.coeff(k);
+        tmp = (double)v.coeff(k) - c.coeff(k);
         tmp *= tmp;
-        D.coeffRef(k) = D.coeff(k + 1) + tmp * _squared_norm_of_gso_vec.coeff(k);
+        D.coeffRef(k) = D.coeff(k + 1) + tmp * B.coeff(k);
 
         if (last_nonzero == 0)
         {
@@ -49,25 +47,21 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld _gso_coeff_mat, const Vect
             P += tmp;
         }
 
-        enumeration_upper_bound = _log_squared_norm_of_gso_vec.head(last_nonzero + 1).array().sum();
-        if (LOG099 + P > enumeration_upper_bound)
+        R = logB.head(last_nonzero + 1).array().sum();
+        if (LOG099 + P > R)
         {
             if (k == 0)
-            {
                 return v;
-            }
             else
             {
                 P += log(D.coeff(k));
                 --k;
                 r[k] = (r[k] > r[k + 1] ? r[k] : r[k + 1]);
                 for (i = r[k]; i > k; --i)
-                {
-                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + _gso_coeff_mat.coeff(i, k) * v(i);
-                }
-                center.coeffRef(k) = -sigma.coeff(k + 1, k);
-                v.coeffRef(k) = round(center.coeff(k));
-                weight.coeffRef(k) = 1;
+                    sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + mu.coeff(i, k) * v(i);
+                c.coeffRef(k) = -sigma.coeff(k + 1, k);
+                v.coeffRef(k) = round(c.coeff(k));
+                w.coeffRef(k) = 1;
             }
         }
         else
@@ -85,6 +79,7 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld _gso_coeff_mat, const Vect
                 {
                     last_nonzero = k;
                     ++v.coeffRef(k);
+#if 0
                     if (v.coeff(last_nonzero) >= 2)
                     {
                         ++k;
@@ -100,11 +95,12 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld _gso_coeff_mat, const Vect
                             v.coeffRef(last_nonzero) = 1;
                         }
                     }
+#endif
                 }
                 else
                 {
-                    v.coeff(k) > center.coeff(k) ? v.coeffRef(k) -= weight.coeff(k) : v.coeffRef(k) += weight.coeff(k);
-                    ++weight.coeffRef(k);
+                    v.coeff(k) > c.coeff(k) ? v.coeffRef(k) -= w.coeff(k) : v.coeffRef(k) += w.coeff(k);
+                    ++w.coeffRef(k);
                     P -= log(D.coeff(k));
                 }
             }
