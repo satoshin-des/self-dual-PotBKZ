@@ -3,6 +3,8 @@ import numpy as np
 
 pf = platform.system()
 
+N = int(input("lattice dimension = "))
+
 if pf == 'Linux':
     SDPB = ctypes.cdll.LoadLibrary("./SelfDualPotBKZ.so")
 elif pf == 'Windows':
@@ -19,14 +21,16 @@ def PotLLL(b, d):
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     for i in range(N):
-        for j in range(N): pp[i][j] = ctypes.c_long(b[i, j])
+        for j in range(N):
+            pp[i][j] = ctypes.c_long(b[i, j])
 
     SDPB.PotLLL.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_double, ctypes.c_int, ctypes.c_int
     SDPB.PotLLL.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
     bb = SDPB.PotLLL(pp, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = bb[i][j]
+        for j in range(N):
+            b[i, j] = bb[i][j]
     
 
 def DualPotLLL(b, d):
@@ -40,7 +44,8 @@ def DualPotLLL(b, d):
     bb = SDPB.DualPotLLL(pp, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = bb[i][j]
+        for j in range(N):
+            b[i, j] = bb[i][j]
 
 def PotBKZ(b, beta, d):
     n, m = b.shape
@@ -53,7 +58,8 @@ def PotBKZ(b, beta, d):
     bb = SDPB.PotBKZ(pp, beta, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = bb[i][j]
+        for j in range(N):
+            b[i, j] = bb[i][j]
 
 def DualPotBKZ(b, beta, d):
     n, m = b.shape
@@ -66,7 +72,8 @@ def DualPotBKZ(b, beta, d):
     bb = SDPB.DualPotBKZ(pp, beta, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = bb[i][j]
+        for j in range(N):
+            b[i, j] = bb[i][j]
 
 def SelfDualPotBKZ(b, beta, d):
     n, m = b.shape
@@ -79,14 +86,26 @@ def SelfDualPotBKZ(b, beta, d):
     bb = SDPB.SelfDualPotBKZ(pp, beta, d, n, m)
 
     for i in range(N):
-        for j in range(N): b[i, j] = bb[i][j]
+        for j in range(N):
+            b[i, j] = bb[i][j]
 
 if __name__ == '__main__':
-    N = 80
-
     b = np.eye(N, dtype=int)
-    for i in range(N): b[i, 0] = random.randint(100, 1000)
-    c = b.copy()
+    
+    is_svp_challenge = True
+    
+    if is_svp_challenge:
+        with open(f'svp_challenge_list/SVP-{N}-{0}.svp') as f:
+            basis = np.array(f.read().split()[1:], dtype=int)
+        
+        for i in range(N):
+            for j in range(N):
+                b[i, j] = basis[j + i * N]
+        c = b.copy()
+    else:
+        for i in range(N):
+            b[i, 0] = random.randint(100, 1000)
+        c = b.copy()
 
     print(b)
     print("PotLLL-reduce:")

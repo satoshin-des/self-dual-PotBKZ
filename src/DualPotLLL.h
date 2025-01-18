@@ -6,9 +6,16 @@
 inline void Lattice::DUAL_POT_LLL(const double reduction_parameter)
 {
     double P, P_max, P_min, s;
-    _dual_gso_coeff_mat.setZero();
     NTL::mat_ZZ c;
     c.SetDims(_n, _m);
+
+    _dual_gso_coeff_mat.resize(_n, _n);
+    _dual_gso_coeff_mat.setZero();
+    _dual_squared_norm_of_gso_vec.resize(_n);
+    _dual_squared_norm_of_gso_vec.setZero();
+    _gso_coeff_mat.setZero();
+    _gso_vec_mat.setZero();
+    _squared_norm_of_gso_vec.setZero();
 
     // LLL基底簡約
     for (int i = 0, j; i < _n; ++i)
@@ -38,13 +45,15 @@ inline void Lattice::DUAL_POT_LLL(const double reduction_parameter)
         {
             _dual_gso_coeff_mat.coeffRef(k, j) = 0;
             for (i = k; i < j; ++i)
+            {
                 _dual_gso_coeff_mat.coeffRef(k, j) -= _gso_coeff_mat.coeff(j, i) * _dual_gso_coeff_mat.coeff(k, i);
+            }
 
             if (_dual_gso_coeff_mat.coeff(k, j) > 0.5 || _dual_gso_coeff_mat.coeff(k, j) < -0.5)
             {
                 q = round(_dual_gso_coeff_mat.coeff(k, j));
                 basis.row(j) += q * basis.row(k);
-                _dual_gso_coeff_mat.row(k).tail(_n - j + 1) -= q * _dual_gso_coeff_mat.row(j).tail(_n - j + 1);
+                _dual_gso_coeff_mat.row(k).tail(_n - j + 1) -= static_cast<long double>(q) * _dual_gso_coeff_mat.row(j).tail(_n - j + 1);
                 _gso_coeff_mat.row(j).head(k + 1) += q * _gso_coeff_mat.row(k).head(k + 1);
             }
         }
@@ -55,7 +64,9 @@ inline void Lattice::DUAL_POT_LLL(const double reduction_parameter)
         {
             s = 0.0;
             for (i = k; i <= j; ++i)
+            {
                 s += _dual_gso_coeff_mat.coeff(k, i) * _dual_gso_coeff_mat.coeff(k, i) / _squared_norm_of_gso_vec.coeff(i);
+            }
             P *= _squared_norm_of_gso_vec.coeff(j);
             P *= s;
 

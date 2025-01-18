@@ -31,7 +31,7 @@ inline void Lattice::SELF_DUAL_POT_BKZ(const int beta, const double reduction_pa
             kj1 = k - jp + 1;
             v.resize(kj1);
             v.setZero();
-
+            
             /* enumerate a shortest vector*/
             v = PotENUM(_gso_coeff_mat.block(jp, jp, kj1, kj1), _squared_norm_of_gso_vec.segment(jp, kj1), _log_squared_norm_of_gso_vec.segment(jp, kj1), kj1);
 
@@ -41,21 +41,32 @@ inline void Lattice::SELF_DUAL_POT_BKZ(const int beta, const double reduction_pa
 
                 w = v * basis.block(jp, 0, kj1, _m);
                 cc.SetDims(_n + 1, _m);
+
                 for (l = 0; l < _m; ++l)
                 {
                     for (i = 0; i < jp; ++i)
+                    {
                         cc[i][l] = basis.coeffRef(i, l);
+                    }
                     cc[jp][l] = w[l];
                     for (i = jp + 1; i < _n + 1; ++i)
+                    {
                         cc[i][l] = basis.coeffRef(i - 1, l);
+                    }
                 }
+
                 NTL::LLL(_, cc, 99, 100);
 
                 for (i = 0; i < _n; ++i)
+                {
                     for (l = 0; l < _m; ++l)
+                    {
                         basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
+                    }
+                }
 
                 DUAL_POT_LLL(reduction_parameter);
+
                 GSO();
             }
             else

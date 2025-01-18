@@ -7,6 +7,12 @@ inline void Lattice::POT_LLL(const double reduction_parameter)
     NTL::mat_ZZ c;
     c.SetDims(_n, _m);
 
+    _dual_gso_coeff_mat.setZero();
+    _dual_squared_norm_of_gso_vec.setZero();
+    _gso_coeff_mat.setZero();
+    _gso_vec_mat.setZero();
+    _squared_norm_of_gso_vec.setZero();
+
     // LLL基底簡約
     for (int i = 0, j; i < _n; ++i)
     {
