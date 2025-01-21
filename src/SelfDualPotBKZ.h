@@ -28,7 +28,7 @@ inline void Lattice::SelfDualPotBKZ_each_(const int beta, const double d, const 
         /// ================================
         /// Primal part
         /// ================================
-        printf("Primal = %3d, Dual = %3d\n", zp, zd);
+        // printf("Primal = %3d, Dual = %3d\n", zp, zd);
 
         if (IsPrimal)
         {

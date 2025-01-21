@@ -18,7 +18,7 @@ inline void Lattice::PotBKZ_(const int beta, const double d, const int n, const 
     fprintf(fp, "%Lf\n", logPot(B, n));
     for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
-        printf("%d: z = %d\n", PotTour, z);
+        // printf("%d: z = %d\n", PotTour, z);
         ++Tr;
         fprintf(fp, "%Lf\n", logPot(B, n));
 
