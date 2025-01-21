@@ -1,12 +1,12 @@
 /**
- * @file PotBKZ.cpp
- * @author Arata Sato (23lc002y@rikkyo.ac.jp)
- * @brief
+ * @file SelfDualPotBKZ.cpp
+ * @author 佐藤 新 (23lc002y@rikkyo.ac.jp)
+ * @brief 
  * @version 0.1
- * @date 2024-10-01
- *
- * @copyright Copyright (c) 2024
- *
+ * @date 2025-01-21
+ * 
+ * @copyright Copyright (c) 2025
+ * 
  */
 
 #include <iostream>
@@ -15,7 +15,6 @@
 #include <vector>
 #include <cmath>
 
-// External libraries
 #include <eigen3/Eigen/Dense>
 #include <NTL/RR.h>
 #include <NTL/vec_ZZ.h>
@@ -23,6 +22,11 @@
 #include <NTL/LLL.h>
 
 #include "Lattice.h"
+#include "PotLLL.h"
+#include "DualPotLLL.h"
+#include "PotBKZ.h"
+#include "DualPotBKZ.h"
+#include "SelfDualPotBKZ.h"
 
 extern "C" long **PotLLL(long **basis, const double reduction_parameter, const int n, const int m)
 {

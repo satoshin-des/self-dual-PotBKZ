@@ -2,106 +2,105 @@
 #define SELF_DUAL_POT_BKZ_H
 
 #include "Lattice.h"
+#include "PotENUM.h"
+#include "DualPotENUM.h"
+#include "PotLLL.h"
+#include "DualPotLLL.h"
 
-inline void Lattice::SELF_DUAL_POT_BKZ(const int beta, const double reduction_parameter)
+inline void Lattice::SelfDualPotBKZ_each_(const int beta, const double d, const int n, const int m, FILE *fp)
 {
-    const int n1 = _n - 1, n2 = _n - 2;
+    const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
-    MatrixXli tmp_b(_n, _n);
+    MatrixXli tmp_b(n, n);
+    VectorXld B(n), logB(n);
+    MatrixXld mu(n, n);
     NTL::mat_ZZ cc;
+    VectorXld C, logC;
+    MatrixXld hmu, BB;
 
-    GSO();
+    GSO(B, logB, mu, n, m);
+    fprintf(fp, "%Lf\n", logPot(B, n));
 
-    DUAL_POT_LLL(0.99);
+    DualPotLLL_(0.99, n, m);
 
-    for (int zp = 0, jp = 0, i, k, l, kj1, zd = _n, jd = _n, is_primal_part = 1; zp < _n - 1 && zd > 1;)
+    for (int zp = 0, jp = 0, i, k, l, kj1, zd = n, jd = n, IsPrimal = 1; zp < n - 1 && zd > 1;)
     {
         /// ================================
         /// Primal part
         /// ================================
-        if (is_primal_part)
+        printf("Primal = %3d, Dual = %3d\n", zp, zd);
+
+        if (IsPrimal)
         {
             if (jp == n2)
             {
                 jp = 0;
-                is_primal_part = 0;
+                ++SelfPotTour;
+                IsPrimal = 0;
             }
             ++jp;
             k = (jp + beta - 1 < n1 ? jp + beta - 1 : n1);
             kj1 = k - jp + 1;
+
+            fprintf(fp, "%Lf\n", logPot(B, n));
+
             v.resize(kj1);
             v.setZero();
-            
+
             /* enumerate a shortest vector*/
-            v = PotENUM(_gso_coeff_mat.block(jp, jp, kj1, kj1), _squared_norm_of_gso_vec.segment(jp, kj1), _log_squared_norm_of_gso_vec.segment(jp, kj1), kj1);
+            v = PotENUM(mu.block(jp, jp, kj1, kj1), B.segment(jp, kj1), logB.segment(jp, kj1), kj1);
 
             if (!v.isZero())
             {
                 zp = 0;
 
-                w = v * basis.block(jp, 0, kj1, _m);
-                cc.SetDims(_n + 1, _m);
-
-                for (l = 0; l < _m; ++l)
+                w = v * basis.block(jp, 0, kj1, m);
+                cc.SetDims(n + 1, m);
+                for (l = 0; l < m; ++l)
                 {
                     for (i = 0; i < jp; ++i)
-                    {
                         cc[i][l] = basis.coeffRef(i, l);
-                    }
                     cc[jp][l] = w[l];
-                    for (i = jp + 1; i < _n + 1; ++i)
-                    {
+                    for (i = jp + 1; i < n + 1; ++i)
                         cc[i][l] = basis.coeffRef(i - 1, l);
-                    }
                 }
-
                 NTL::LLL(_, cc, 99, 100);
 
-                for (i = 0; i < _n; ++i)
-                {
-                    for (l = 0; l < _m; ++l)
-                    {
+                for (i = 0; i < n; ++i)
+                    for (l = 0; l < m; ++l)
                         basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
-                    }
-                }
 
-                DUAL_POT_LLL(reduction_parameter);
-
-                GSO();
+                DualPotLLL_(d, n, m);
+                GSO(B, logB, mu, n, m);
             }
             else
-            {
                 ++zp;
-            }
         }
 
         /// ================================
         /// Dual part
         /// ================================
-        if ((!is_primal_part))
+        if (!IsPrimal)
         {
             if (jd == 1)
             {
-                jd = _n;
-                is_primal_part = 1;
+                ++SelfPotTour;
+                jd = n;
+                IsPrimal = 1;
             }
             --jd;
             k = (jd - beta + 1 > 0 ? jd - beta + 1 : 0);
             kj1 = jd - k + 1;
 
-            _dual_squared_norm_of_gso_vec.resize(kj1);
-            _dual_log_squared_norm_of_gso_vec.resize(kj1);
-            _dual_gso_coeff_mat.resize(kj1, kj1);
-            DualGSO(_squared_norm_of_gso_vec.segment(k, kj1),
-                    _log_squared_norm_of_gso_vec.segment(k, kj1),
-                    _gso_coeff_mat.block(k, k, kj1, kj1),
-                    _dual_squared_norm_of_gso_vec,
-                    _dual_log_squared_norm_of_gso_vec,
-                    _dual_gso_coeff_mat,
-                    kj1, kj1);
+            fprintf(fp, "%Lf\n", logPot(B, n));
+
+            C.resize(kj1);
+            logC.resize(kj1);
+            hmu.resize(kj1, kj1);
+            DualGSO(B.segment(k, kj1), logB.segment(k, kj1), mu.block(k, k, kj1, kj1), C, logC, hmu, kj1, kj1);
 
             // Dual Enumeration
-            v = DualPotENUM(_dual_gso_coeff_mat, _dual_squared_norm_of_gso_vec, _dual_log_squared_norm_of_gso_vec, kj1);
+            v = DualPotENUM(hmu, C, logC, kj1);
 
             if (v.isZero())
             {
@@ -109,13 +108,13 @@ inline void Lattice::SELF_DUAL_POT_BKZ(const int beta, const double reduction_pa
             }
             else
             {
-                zd = _n;
+                zd = n;
 
-                tmp_b = Insert(basis.block(k, 0, kj1, _m), v, kj1, _m);
-                basis.block(k, 0, kj1, _m) = tmp_b.block(0, 0, kj1, _m);
+                tmp_b = Insert(basis.block(k, 0, kj1, m), v, kj1, m);
+                basis.block(k, 0, kj1, m) = tmp_b.block(0, 0, kj1, m);
 
-                POT_LLL(reduction_parameter);
-                GSO();
+                PotLLL_(d, n, m);
+                GSO(B, logB, mu, n, m);
             }
         }
     }

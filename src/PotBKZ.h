@@ -2,60 +2,70 @@
 #define POT_BKZ_H
 
 #include "Lattice.h"
+#include "PotENUM.h"
+#include "PotLLL.h"
 
-inline void Lattice::POT_BKZ(const int beta, const double reduction_parameter)
+inline void Lattice::PotBKZ_(const int beta, const double d, const int n, const int m, FILE *fp)
 {
-    const int n1 = _n - 1, n2 = _n - 2;
+    const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
-    MatrixXli tmp_b(_n, _n);
+    MatrixXli tmp_b(n, n);
+    VectorXld B(n), logB(n);
+    MatrixXld mu(n, n);
     NTL::mat_ZZ cc;
 
-    POT_LLL(reduction_parameter);
-    GSO();
-
-    for (int z = 0, j = 0, i, k, l, kj1; z < _n - 1;)
+    GSO(B, logB, mu, n, m);
+    fprintf(fp, "%Lf\n", logPot(B, n));
+    for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
+        printf("%d: z = %d\n", PotTour, z);
+        ++Tr;
+        fprintf(fp, "%Lf\n", logPot(B, n));
+
         if (j == n2)
         {
             j = 0;
+            ++PotTour;
+            ++Tr;
         }
         ++j;
         k = (j + beta - 1 < n1 ? j + beta - 1 : n1);
+        // k = std::min(j + beta - 1, n1);
         kj1 = k - j + 1;
         v.resize(kj1);
         v.setZero();
 
         /* enumerate a shortest vector*/
-        v = PotENUM(_gso_coeff_mat.block(j, j, kj1, kj1), _squared_norm_of_gso_vec.segment(j, kj1), _log_squared_norm_of_gso_vec.segment(j, kj1), kj1);
+        v = PotENUM(mu.block(j, j, kj1, kj1), B.segment(j, kj1), logB.segment(j, kj1), kj1);
 
         if (!v.isZero())
         {
             z = 0;
 
-            w = v * basis.block(j, 0, kj1, _m);
-            cc.SetDims(_n + 1, _m);
-            for (l = 0; l < _m; ++l)
+            w = v * basis.block(j, 0, kj1, m);
+            cc.SetDims(n + 1, m);
+            for (l = 0; l < m; ++l)
             {
                 for (i = 0; i < j; ++i)
                     cc[i][l] = basis.coeffRef(i, l);
                 cc[j][l] = w[l];
-                for (i = j + 1; i < _n + 1; ++i)
+                for (i = j + 1; i < n + 1; ++i)
                     cc[i][l] = basis.coeffRef(i - 1, l);
             }
             NTL::LLL(_, cc, 99, 100);
 
-            for (i = 0; i < _n; ++i)
-                for (l = 0; l < _m; ++l)
+            for (i = 0; i < n; ++i)
+                for (l = 0; l < m; ++l)
                     basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
 
-            POT_LLL(reduction_parameter);
-            GSO();
+            PotLLL_(d, n, m);
+            GSO(B, logB, mu, n, m);
         }
         else
-        {
             ++z;
-        }
     }
+    fprintf(_TOUR_DTA_, "%d\n", Tr);
+    // printf("Primal: %d\n", Tr);
 }
 
 #endif // !POT_BKZ_H

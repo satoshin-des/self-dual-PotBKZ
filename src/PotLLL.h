@@ -1,55 +1,50 @@
+#ifndef POT_LLL_H
+#define POT_LLL_H
+
 #include "Lattice.h"
 
-inline void Lattice::POT_LLL(const double reduction_parameter)
+inline void Lattice::PotLLL_(const long double d, const int n, const int m)
 {
     long double P, P_min, S;
     VectorXli t;
+    VectorXld B(n);
     NTL::mat_ZZ c;
-    c.SetDims(_n, _m);
-
-    _dual_gso_coeff_mat.setZero();
-    _dual_squared_norm_of_gso_vec.setZero();
-    _gso_coeff_mat.setZero();
-    _gso_vec_mat.setZero();
-    _squared_norm_of_gso_vec.setZero();
+    c.SetDims(n, m);
+    MatrixXld mu(n, n);
 
     // LLL基底簡約
-    for (int i = 0, j; i < _n; ++i)
+    for (int i = 0, j; i < n; ++i)
     {
-        for (j = 0; j < _m; ++j)
-        {
+        for (j = 0; j < m; ++j)
             c[i][j] = basis.coeff(i, j);
-        }
     }
     NTL::LLL(_, c, 99, 100);
-    for (int i = 0, j; i < _n; ++i)
+    for (int i = 0, j; i < n; ++i)
     {
-        for (j = 0; j < _m; ++j)
-        {
+        for (j = 0; j < m; ++j)
             basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
-        }
     }
 
-    GSO();
+    GSO(B, mu, n, m);
 
-    for (int l = 0, l1, j, i, k, q; l < _n;)
+    for (int l = 0, l1, j, i, k, q; l < n;)
     {
         l1 = l - 1;
         // 部分サイズ基底簡約
         for (j = l1; j > -1; --j)
-            if (_gso_coeff_mat.coeff(l, j) > 0.5 || _gso_coeff_mat.coeff(l, j) < -0.5)
+            if (mu.coeff(l, j) > 0.5 || mu.coeff(l, j) < -0.5)
             {
-                q = round(_gso_coeff_mat.coeff(l, j));
+                q = round(mu.coeff(l, j));
                 basis.row(l) -= q * basis.row(j);
-                _gso_coeff_mat.row(l).head(j + 1) -= static_cast<long double>(q) * _gso_coeff_mat.row(j).head(j + 1);
+                mu.row(l).head(j + 1) -= (long double)q * mu.row(j).head(j + 1);
             }
 
         P = P_min = 1.0;
         k = 0;
         for (j = l1; j >= 0; --j)
         {
-            S = (_gso_coeff_mat.row(l).segment(j, l - j).array().square() * _squared_norm_of_gso_vec.segment(j, l - j).array()).sum();
-            P *= (_squared_norm_of_gso_vec.coeff(l) + S) / _squared_norm_of_gso_vec.coeff(j);
+            S = (mu.row(l).segment(j, l - j).array().square() * B.segment(j, l - j).array()).sum();
+            P *= (B.coeff(l) + S) / B.coeff(j);
             if (P < P_min)
             {
                 k = j;
@@ -57,17 +52,15 @@ inline void Lattice::POT_LLL(const double reduction_parameter)
             }
         }
 
-        if (reduction_parameter > P_min)
+        if (d > P_min)
         {
             // Deep insertion
             t = basis.row(l);
             for (j = l; j > k; --j)
-            {
                 basis.row(j) = basis.row(j - 1);
-            }
             basis.row(k) = t;
 
-            GSO();
+            GSO(B, mu, n, m);
             l = k;
         }
         else
@@ -76,3 +69,5 @@ inline void Lattice::POT_LLL(const double reduction_parameter)
         }
     }
 }
+
+#endif // !POT_LLL_H

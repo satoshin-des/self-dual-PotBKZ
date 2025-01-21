@@ -2,35 +2,46 @@
 #define DUAL_POT_BKZ_H
 
 #include "Lattice.h"
+#include "DualPotENUM.h"
+#include "DualPotLLL.h"
+#include "PotLLL.h"
 
-inline void Lattice::DUAL_POT_BKZ(const int beta, const double delta)
+inline void Lattice::DualPotBKZ_(const int beta, const double delta, const int n, const int m, FILE *fp)
 {
     VectorXli x;
     MatrixXli tmp_b;
-    _log_squared_norm_of_gso_vec.setZero();
-    MatrixXld BB;
+    VectorXld B(n), logB(n), C, logC;
+    B.setZero();
+    logB.setZero();
+    MatrixXld mu(n, n), hmu, BB;
+    mu.setZero();
 
-    DUAL_POT_LLL(0.99);
+    GSO(B, logB, mu, n, m);
+    fprintf(fp, "%Lf\n", logPot(B, n));
 
-    GSO();
-
-    for (int z = _n, i, j = _n, k, dim_of_block_lattice; z > 2;)
+    // DualPotLLL(basis, 0.99, n, m);
+    for (int z = n, i, j = n, k, d; z > 1;)
     {
         if (j == 1)
         {
-            j = _n;
+            ++PotTour;
+            j = n;
         }
         --j;
-        k = std::max(j - beta + 1, 0);
-        dim_of_block_lattice = j - k + 1;
+        k = (j - beta + 1 > 0 ? j - beta + 1 : 0);
+        d = j - k + 1;
 
-        _dual_squared_norm_of_gso_vec.resize(dim_of_block_lattice);
-        _dual_log_squared_norm_of_gso_vec.resize(dim_of_block_lattice);
-        _dual_gso_coeff_mat.resize(dim_of_block_lattice, dim_of_block_lattice);
-        DualGSO(_squared_norm_of_gso_vec.segment(k, dim_of_block_lattice), _log_squared_norm_of_gso_vec.segment(k, dim_of_block_lattice), _gso_coeff_mat.block(k, k, dim_of_block_lattice, dim_of_block_lattice), _dual_squared_norm_of_gso_vec, _dual_log_squared_norm_of_gso_vec, _dual_gso_coeff_mat, dim_of_block_lattice, dim_of_block_lattice);
+        printf("z = %d\n", z);
+        ++Tr;
+        fprintf(fp, "%Lf\n", logPot(B, n));
+
+        C.resize(d);
+        logC.resize(d);
+        hmu.resize(d, d);
+        DualGSO(B.segment(k, d), logB.segment(k, d), mu.block(k, k, d, d), C, logC, hmu, d, d);
 
         // Dual Enumeration
-        x = DualPotENUM(_dual_gso_coeff_mat, _dual_squared_norm_of_gso_vec, _dual_log_squared_norm_of_gso_vec, dim_of_block_lattice);
+        x = DualPotENUM(hmu, C, logC, d);
 
         if (x.isZero())
         {
@@ -38,15 +49,18 @@ inline void Lattice::DUAL_POT_BKZ(const int beta, const double delta)
         }
         else
         {
-            z = _n;
+            z = n;
 
-            tmp_b = Insert(basis.block(k, 0, dim_of_block_lattice, _m), x, dim_of_block_lattice, _m);
-            basis.block(k, 0, dim_of_block_lattice, _m) = tmp_b.block(0, 0, dim_of_block_lattice, _m);
+            tmp_b = Insert(basis.block(k, 0, d, m), x, d, m);
+            basis.block(k, 0, d, m) = tmp_b.block(0, 0, d, m);
 
-            POT_LLL(delta);
-            GSO();
+            DualPotLLL_(delta, n, m);
+            // PotLLL_(delta, n, m);
+            GSO(B, logB, mu, n, m);
         }
     }
+    fprintf(_TOUR_DTA_, "%d\n", Tr);
+    printf("Dual: %d\n", Tr);
 }
 
 #endif // !DUAL_POT_BKZ_H

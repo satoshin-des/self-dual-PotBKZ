@@ -3,71 +3,62 @@
 
 #include "Lattice.h"
 
-inline void Lattice::DUAL_POT_LLL(const double reduction_parameter)
+inline void Lattice::DualPotLLL_(const double d, const int n, const int m)
 {
     double P, P_max, P_min, s;
+    MatrixXld mu(n, n), nu(n, n);
+    mu.setZero();
+    nu.setZero();
+    VectorXld B(n);
+    B.setZero();
     NTL::mat_ZZ c;
-    c.SetDims(_n, _m);
-
-    _dual_gso_coeff_mat.resize(_n, _n);
-    _dual_gso_coeff_mat.setZero();
-    _dual_squared_norm_of_gso_vec.resize(_n);
-    _dual_squared_norm_of_gso_vec.setZero();
-    _gso_coeff_mat.setZero();
-    _gso_vec_mat.setZero();
-    _squared_norm_of_gso_vec.setZero();
+    c.SetDims(n, m);
 
     // LLL基底簡約
-    for (int i = 0, j; i < _n; ++i)
+    for (int i = 0, j; i < n; ++i)
     {
-        for (j = 0; j < _m; ++j)
-        {
+        for (j = 0; j < m; ++j)
             c[i][j] = basis.coeff(i, j);
-        }
     }
     NTL::LLL(_, c, 99, 100);
-    for (int i = 0, j; i < _n; ++i)
+    for (int i = 0, j; i < n; ++i)
     {
-        for (j = 0; j < _m; ++j)
-        {
+        for (j = 0; j < m; ++j)
             basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
-        }
     }
 
-    GSO();
+    GSO(B, mu, n, m);
 
-    for (int k = _n - 1, j, i, l, q; k >= 0;)
+    for (int k = n - 1, j, i, l, q; k >= 0;)
     {
-        _dual_gso_coeff_mat.coeffRef(k, k) = 1.0;
+        nu.coeffRef(k, k) = 1.0;
 
         // Dual size reduction
-        for (j = k + 1; j < _n; ++j)
+        for (j = k + 1; j < n; ++j)
         {
-            _dual_gso_coeff_mat.coeffRef(k, j) = 0;
+            nu.coeffRef(k, j) = 0;
             for (i = k; i < j; ++i)
-            {
-                _dual_gso_coeff_mat.coeffRef(k, j) -= _gso_coeff_mat.coeff(j, i) * _dual_gso_coeff_mat.coeff(k, i);
-            }
+                nu.coeffRef(k, j) -= mu.coeff(j, i) * nu.coeff(k, i);
 
-            if (_dual_gso_coeff_mat.coeff(k, j) > 0.5 || _dual_gso_coeff_mat.coeff(k, j) < -0.5)
+            if (nu.coeff(k, j) > 0.5 || nu.coeff(k, j) < -0.5)
             {
-                q = round(_dual_gso_coeff_mat.coeff(k, j));
+                q = round(nu.coeff(k, j));
                 basis.row(j) += q * basis.row(k);
-                _dual_gso_coeff_mat.row(k).tail(_n - j + 1) -= static_cast<long double>(q) * _dual_gso_coeff_mat.row(j).tail(_n - j + 1);
-                _gso_coeff_mat.row(j).head(k + 1) += q * _gso_coeff_mat.row(k).head(k + 1);
+                nu.row(k).tail(n - j + 1) -= q * nu.row(j).tail(n - j + 1);
+                mu.row(j).head(k + 1) += q * mu.row(k).head(k + 1);
             }
         }
 
+        // Potential
+
         P = P_min = 1.0;
-        l = _n - 1;
-        for (j = k + 1; j < _n; ++j)
+        l = n - 1;
+        for (j = k + 1; j < n; ++j)
         {
             s = 0.0;
             for (i = k; i <= j; ++i)
-            {
-                s += _dual_gso_coeff_mat.coeff(k, i) * _dual_gso_coeff_mat.coeff(k, i) / _squared_norm_of_gso_vec.coeff(i);
-            }
-            P *= _squared_norm_of_gso_vec.coeff(j);
+                s += nu.coeff(k, i) * nu.coeff(k, i) / B.coeff(i);
+            P *= B.coeff(j);
             P *= s;
 
             if (P < P_min)
@@ -77,16 +68,14 @@ inline void Lattice::DUAL_POT_LLL(const double reduction_parameter)
             }
         }
 
-        if (reduction_parameter > P_min)
+        if (d > P_min)
         {
-            DualDeepInsertion(k, l);
-            GSO();
+            DualDeepInsertion(m, k, l);
+            GSO(B, mu, n, m);
             k = l;
         }
         else
-        {
             --k;
-        }
     }
 }
 
