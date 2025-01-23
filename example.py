@@ -1,17 +1,25 @@
-import ctypes, random, os, platform, sys
+import ctypes, random, platform, sys
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
-pf = platform.system()
+is_graphs_output_mode = True # output graphs of potential or not
 
 N = int(input("lattice dimension = "))
 
-if pf == 'Linux':
+if platform.system() == 'Linux':
     SDPB = ctypes.cdll.LoadLibrary("./SelfDualPotBKZ.so")
 else:
-    print(f"Platform {pf} is not supported.")
+    print(f"Platform {platform.system()} is not supported.")
     sys.exit(0)
 
-def PotLLL(b, d):
+def PotLLL(b: np.ndarray, d: float) -> None:
+    """PotLLL reduction in SelfDualPotBKZ.so
+
+    Args:
+        b (np.ndarray): lattice basis
+        d (float): reduction parameter
+    """
     n, m = b.shape
 
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
@@ -29,7 +37,15 @@ def PotLLL(b, d):
         for j in range(N):
             b[i, j] = bb[i][j]
     
-def BKZ(b, block_size, d, max_loop):
+def BKZ(b: np.ndarray, block_size: int, d: float, max_loop: int) -> None:
+    """BKZ reduction in SelfDualPotBKZ.so
+
+    Args:
+        b (np.ndarray): lattice basis
+        block_size (int): block size
+        d (float): reduction parameter
+        max_loop (int): limit number of tours
+    """
     n, m = b.shape
 
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
@@ -47,7 +63,13 @@ def BKZ(b, block_size, d, max_loop):
         for j in range(N):
             b[i, j] = bb[i][j]
 
-def DualPotLLL(b, d):
+def DualPotLLL(b: np.ndarray, d: float) -> None:
+    """dual version of PotLLL reduction in SelfDualPotBKZ.so
+
+    Args:
+        b (np.ndarray): lattice basis
+        d (float): reduction parameter
+    """
     n, m = b.shape
 
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
@@ -61,7 +83,14 @@ def DualPotLLL(b, d):
         for j in range(N):
             b[i, j] = bb[i][j]
 
-def PotBKZ(b, beta, d):
+def PotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
+    """PotBKZ reduction in SelfDualPotBKZ.so
+
+    Args:
+        b (np.ndarray): lattice basis
+        block_size (int): block size
+        d (float): reduction parameter
+    """
     n, m = b.shape
 
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
@@ -69,13 +98,20 @@ def PotBKZ(b, beta, d):
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
     SDPB.PotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
-    bb = SDPB.PotBKZ(pp, beta, d, n, m)
+    bb = SDPB.PotBKZ(pp, block_size, d, n, m)
 
     for i in range(N):
         for j in range(N):
             b[i, j] = bb[i][j]
 
-def DualPotBKZ(b, beta, d):
+def DualPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
+    """DualPotBKZ reduction in SelfDualPotBKZ.so
+
+    Args:
+        b (np.ndarray): lattice basis
+        block_size (int): block size
+        d (float): reduction parameter
+    """
     n, m = b.shape
 
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
@@ -83,13 +119,20 @@ def DualPotBKZ(b, beta, d):
 
     SDPB.DualPotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
     SDPB.DualPotBKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
-    bb = SDPB.DualPotBKZ(pp, beta, d, n, m)
+    bb = SDPB.DualPotBKZ(pp, block_size, d, n, m)
 
     for i in range(N):
         for j in range(N):
             b[i, j] = bb[i][j]
 
-def SelfDualPotBKZ(b, beta, d):
+def SelfDualPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
+    """SelfDualPotBKZ in SelfDualPotBKZ.so
+
+    Args:
+        b (np.ndarray): lattice basis
+        block_size (int): block size
+        d (float): reduction parameter
+    """
     n, m = b.shape
 
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
@@ -97,7 +140,7 @@ def SelfDualPotBKZ(b, beta, d):
 
     SDPB.SelfDualPotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
     SDPB.SelfDualPotBKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
-    bb = SDPB.SelfDualPotBKZ(pp, beta, d, n, m)
+    bb = SDPB.SelfDualPotBKZ(pp, block_size, d, n, m)
 
     for i in range(N):
         for j in range(N):
@@ -131,7 +174,7 @@ if __name__ == '__main__':
 
     c = b.copy()
     print("BKZ-reduced:")
-    BKZ(c, 20, 0.99, 10)
+    BKZ(c, 40, 0.99, 10)
     print(np.linalg.norm(c[0]))
     print(c)
     
@@ -158,3 +201,26 @@ if __name__ == '__main__':
     SelfDualPotBKZ(c, 40, 0.99)
     print(np.linalg.norm(c[0]))
     print(c)
+
+    if is_graphs_output_mode:
+        bkz_potential = pd.read_csv(".data/potential_of_BKZ.csv")['Potential']
+        bkz_x = np.arange(len(bkz_potential)) / N
+        dual_pot_bkz_potential = pd.read_csv(".data/potential_of_DualPotBKZ.csv")['Potential']
+        dual_pot_bkz_x = np.arange(len(dual_pot_bkz_potential)) / N
+        pot_bkz_potential = pd.read_csv(".data/potential_of_PotBKZ.csv")['Potential']
+        pot_bkz_x = np.arange(len(pot_bkz_potential)) / N
+        self_dual_pot_bkz_potential = pd.read_csv(".data/potential_of_SelfDualPotBKZ.csv")['Potential']
+        self_dual_pot_bkz_x = np.arange(len(self_dual_pot_bkz_potential)) / N
+
+        fig, ax = plt.subplots()
+        ax.set_xlabel("number of tours")
+        ax.set_ylabel("log value of potential")
+        ax.plot(bkz_x, bkz_potential, marker = "", label="Potential of BKZ")
+        ax.plot(pot_bkz_x, pot_bkz_potential, marker="", label="Potential of PotBKZ")
+        ax.plot(dual_pot_bkz_x, dual_pot_bkz_potential, marker="", label="Potential of dual PotBKZ")
+        ax.plot(self_dual_pot_bkz_x, self_dual_pot_bkz_potential, marker = "", label="Potential of self dual PotBKZ")
+        plt.tick_params()
+        plt.legend()
+        plt.show()
+        plt.savefig(f'potential_graph/SVP_{N}_{0}.png')
+    

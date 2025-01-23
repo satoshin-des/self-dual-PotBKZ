@@ -33,12 +33,14 @@ public:
         basis.resize(n, m);
     }
 
-    /// @brief Dual version of deep-insertion
-    /// @param basis Lattice basis
-    /// @param n Rank of lattice
-    /// @param k
-    /// @param l
-    void DualDeepInsertion(const int n, const int k, const int l)
+    /**
+     * @brief dual version of deep-insertion
+     * 
+     * @param n number of rows of lattice basis matrix
+     * @param k 
+     * @param l 
+     */
+    void dualDeepInsertion(const int n, const int k, const int l)
     {
         const VectorXli t = basis.row(k);
         for (int j = k; j < l; ++j)
@@ -204,7 +206,7 @@ public:
 
     /**
      * @brief Enumerates a vector whose norm is shorter than R on the lattice
-     * 
+     *
      * @param mu GSO-coefficient-matrix
      * @param B vector of squared norm of GSO-vectors
      * @param rho projected vector
@@ -217,25 +219,76 @@ public:
     /// @brief Enumerates the shortest vector on the lattice
     /// @param mu GSO-coefficient matrix
     /// @param B Squared-norms of row vectors of GSO-matrix
-    /// @param n Rank of lattice
+    /// @param n number of rows of lattice basis matrix
     /// @return VectorXli the shortest vector
     VectorXli enumerate(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n);
 
+    /**
+     * @brief PotENUM algorithm
+     *
+     * @param mu GSO-coefficient-matrix
+     * @param B vector of squared norm of GSO-vectors
+     * @param logB vector of logarithm value of squared norm of GSO-vectors
+     * @param n number of rows of lattice basis matrix
+     * @return VectorXli delta-anomalous vector
+     */
     VectorXli PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n);
 
+    /**
+     * @brief DualPotENUM algorithm
+     *
+     * @param mu GSO-coefficient-matrix
+     * @param B vector of squared norm of GSO-vectors
+     * @param logB vector of logarithm value of squared norm of GSO-vectors
+     * @param n number of rows of lattice basis matrix
+     * @return VectorXli vector that decreases potential of lattice inserting to dual basis
+     */
     VectorXli DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n);
 
-    void PotLLL_(const long double d, const int n, const int m);
+    /**
+     * @brief PotLLL reduction
+     *
+     * @param reduction_parameter reduction parameter
+     * @param n number of rows of lattice basis matrix
+     * @param m number of columns of lattice basis matrix
+     */
+    void PotLLL_(const double reduction_parameter, const int n, const int m);
 
-    void DualPotLLL_(const double d, const int n, const int m);
+    /**
+     * @brief dual version of PotLLL reduction
+     *
+     * @param reduction_parameter reduction parameter
+     * @param n number of rows of lattice basis matrix
+     * @param m number of columns of lattice basis matrix
+     */
+    void DualPotLLL_(const double reduction_parameter, const int n, const int m);
 
+    /**
+     * @brief BKZ reduction
+     *
+     * @param block_size block size
+     * @param reduction_parameter reduction parameter
+     * @param max_loop limit number of tours
+     * @param n number of rows of lattice basis matrix
+     * @param m number of columns of lattice basis matrix
+     * @param potential_file file to output logarithm values of potential
+     */
     void BKZ_(const int block_size, const double reduction_parameter, const int max_loop, const int n, const int m, FILE *potential_file);
 
-    void PotBKZ_(const int beta, const double d, const int n, const int m, FILE *fp);
+    /**
+     * @brief PotBKKZ reduction
+     *
+     * @param block_size block size
+     * @param reduction_parameter reduction parameter
+     * @param n number of rows of lattice basis matrix
+     * @param m number of columns of lattice basis matrix
+     * @param fp file to output logarithm values of potential
+     */
+    void PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp);
 
-    void DualPotBKZ_(const int beta, const double delta, const int n, const int m, FILE *fp);
+    void DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp);
 
-    void SelfDualPotBKZ_(const int beta, const double d, const int n, const int m, FILE *fp);
+    void SelfDualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp);
 };
 
 #endif // !LATTICE_H

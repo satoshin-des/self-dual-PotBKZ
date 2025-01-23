@@ -6,14 +6,14 @@
 #include "DualPotLLL.h"
 #include "PotLLL.h"
 
-inline void Lattice::DualPotBKZ_(const int beta, const double delta, const int n, const int m, FILE *fp)
+inline void Lattice::DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp)
 {
     int consecutive_solution_count = 0; // consecutive numbers of that DualPotENUM has solution
     int dim_of_local_block_lattice;     // dimension of local projected block lattice
     VectorXli enum_coeff_vector;        // coefficient vector enumerated by DualPotENUM
-    MatrixXli tmp_b;
     VectorXld B(n), logB(n), C, logC;
     MatrixXld mu(n, n), hmu, BB;
+    MatrixXli temp_basis;
     B.setZero();
     logB.setZero();
     mu.setZero();
@@ -28,7 +28,7 @@ inline void Lattice::DualPotBKZ_(const int beta, const double delta, const int n
             j = n;
         }
         --j;
-        k = (j - beta + 1 > 0 ? j - beta + 1 : 0);
+        k = (j - block_size + 1 > 0 ? j - block_size + 1 : 0);
         dim_of_local_block_lattice = j - k + 1;
 
         fprintf(fp, "%Lf\n", logPot(B, n));
@@ -53,10 +53,10 @@ inline void Lattice::DualPotBKZ_(const int beta, const double delta, const int n
         {
             consecutive_solution_count = 0;
 
-            tmp_b = Insert(basis.block(k, 0, dim_of_local_block_lattice, m), enum_coeff_vector, dim_of_local_block_lattice, m);
-            basis.block(k, 0, dim_of_local_block_lattice, m) = tmp_b.block(0, 0, dim_of_local_block_lattice, m);
+            temp_basis = Insert(basis.block(k, 0, dim_of_local_block_lattice, m), enum_coeff_vector, dim_of_local_block_lattice, m);
+            basis.block(k, 0, dim_of_local_block_lattice, m) = temp_basis.block(0, 0, dim_of_local_block_lattice, m);
 
-            DualPotLLL_(delta, n, m);
+            DualPotLLL_(reduction_parameter, n, m);
             GSO(B, logB, mu, n, m);
         }
     }

@@ -3,7 +3,7 @@
 
 #include "Lattice.h"
 
-inline void Lattice::PotLLL_(const long double d, const int n, const int m)
+inline void Lattice::PotLLL_(const double reduction_parameter, const int n, const int m)
 {
     long double P, P_min, S;
     VectorXli t;
@@ -22,7 +22,7 @@ inline void Lattice::PotLLL_(const long double d, const int n, const int m)
     }
 
     NTL::LLL(_, c, 99, 100);
-    
+
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
@@ -33,21 +33,22 @@ inline void Lattice::PotLLL_(const long double d, const int n, const int m)
 
     GSO(B, mu, n, m);
 
-    for (int l = 0, l1, j, i, k, q; l < n;)
+    for (int l = 0, j, i, k, q; l < n;)
     {
-        l1 = l - 1;
         // 部分サイズ基底簡約
-        for (j = l1; j > -1; --j)
+        for (j = l - 1; j > -1; --j)
+        {
             if (mu.coeff(l, j) > 0.5 || mu.coeff(l, j) < -0.5)
             {
                 q = round(mu.coeff(l, j));
                 basis.row(l) -= q * basis.row(j);
                 mu.row(l).head(j + 1) -= (long double)q * mu.row(j).head(j + 1);
             }
+        }
 
         P = P_min = 1.0;
         k = 0;
-        for (j = l1; j >= 0; --j)
+        for (j = l - 1; j >= 0; --j)
         {
             S = (mu.row(l).segment(j, l - j).array().square() * B.segment(j, l - j).array()).sum();
             P *= (B.coeff(l) + S) / B.coeff(j);
@@ -58,9 +59,9 @@ inline void Lattice::PotLLL_(const long double d, const int n, const int m)
             }
         }
 
-        if (d > P_min)
+        if (reduction_parameter > P_min)
         {
-            // Deep insertion
+            // deep insertion
             t = basis.row(l);
             for (j = l; j > k; --j)
             {

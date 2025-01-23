@@ -3,9 +3,11 @@
 
 #include "Lattice.h"
 
-inline void Lattice::DualPotLLL_(const double d, const int n, const int m)
+inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, const int m)
 {
-    double P, P_max, P_min, s;
+    double potential;
+    double minimal_potential;
+    double s;
     MatrixXld mu(n, n), nu(n, n);
     mu.setZero();
     nu.setZero();
@@ -54,9 +56,8 @@ inline void Lattice::DualPotLLL_(const double d, const int n, const int m)
             }
         }
 
-        // Potential
-
-        P = P_min = 1.0;
+        potential = 1.0;
+        minimal_potential = 1.0;
         l = n - 1;
         for (j = k + 1; j < n; ++j)
         {
@@ -65,19 +66,19 @@ inline void Lattice::DualPotLLL_(const double d, const int n, const int m)
             {
                 s += nu.coeff(k, i) * nu.coeff(k, i) / B.coeff(i);
             }
-            P *= B.coeff(j);
-            P *= s;
+            potential *= B.coeff(j);
+            potential *= s;
 
-            if (P < P_min)
+            if (potential < minimal_potential)
             {
                 l = j;
-                P_min = P;
+                minimal_potential = potential;
             }
         }
 
-        if (d > P_min)
+        if (reduction_parameter > minimal_potential)
         {
-            DualDeepInsertion(m, k, l);
+            dualDeepInsertion(m, k, l);
             GSO(B, mu, n, m);
             k = l;
         }

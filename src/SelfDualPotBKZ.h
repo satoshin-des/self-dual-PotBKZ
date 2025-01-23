@@ -7,13 +7,18 @@
 #include "PotLLL.h"
 #include "DualPotLLL.h"
 
-inline void Lattice::SelfDualPotBKZ_(const int beta, const double d, const int n, const int m, FILE *fp)
+inline void Lattice::SelfDualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp)
 {
-    VectorXli v, w;
-    MatrixXli tmp_b(n, n);
+    bool is_primal = true;                     // current tour is primal part or not
+    int primal_consecutive_solution_count = 0; // consecutive numbers of that PotENUM has solution
+    int dual_consecutive_solution_count = 0;   // consecutive numbers of that DualPotENUM has solution
+    int dim_of_local_block_lattice;            // dimension of local projected block lattice
+    VectorXli v;                               // enumerated vector by PotENUM or DualPotENUM
+    VectorXli w;                               // enumerated coefficient vector by PotENUM or DualPotENUM
+    MatrixXli temp_basis(n, n);
     VectorXld B(n), logB(n);
     MatrixXld mu(n, n);
-    NTL::mat_ZZ cc;
+    NTL::mat_ZZ inserted_vecs;
     VectorXld C, logC;
     MatrixXld hmu, BB;
 
@@ -22,104 +27,101 @@ inline void Lattice::SelfDualPotBKZ_(const int beta, const double d, const int n
 
     DualPotLLL_(0.99, n, m);
 
-    for (int primal_z = 0, jp = 0, i, k, l, kj1, dual_z = n, jd = n, is_primal = 1; primal_z < n - 1 && dual_z > 1;)
+    for (int primal_j = 0, i, k, l, dual_j = n; std::max(primal_consecutive_solution_count, dual_consecutive_solution_count) < n - 1;)
     {
-        /// ================================
-        /// Primal part
-        /// ================================
         if (is_primal)
-        {
-            if (jp == n - 2)
+        { // primal part
+            if (primal_j == n - 2)
             {
-                jp = 0;
-                is_primal = 0;
+                primal_j = 0;
+                is_primal = false;
             }
-            ++jp;
-            k = (jp + beta - 1 < n - 1 ? jp + beta - 1 : n - 1);
-            kj1 = k - jp + 1;
+            ++primal_j;
+            k = (primal_j + block_size - 1 < n - 1 ? primal_j + block_size - 1 : n - 1);
+            dim_of_local_block_lattice = k - primal_j + 1;
 
             fprintf(fp, "%Lf\n", logPot(B, n));
 
-            v.resize(kj1);
+            v.resize(dim_of_local_block_lattice);
             v.setZero();
 
             /* enumerate a shortest vector*/
-            v = PotENUM(mu.block(jp, jp, kj1, kj1), B.segment(jp, kj1), logB.segment(jp, kj1), kj1);
+            v = PotENUM(mu.block(primal_j, primal_j, dim_of_local_block_lattice, dim_of_local_block_lattice), B.segment(primal_j, dim_of_local_block_lattice), logB.segment(primal_j, dim_of_local_block_lattice), dim_of_local_block_lattice);
 
             if (!v.isZero())
             {
-                primal_z = 0;
+                primal_consecutive_solution_count = 0;
 
-                w = v * basis.block(jp, 0, kj1, m);
-                cc.SetDims(n + 1, m);
+                w = v * basis.block(primal_j, 0, dim_of_local_block_lattice, m);
+                inserted_vecs.SetDims(n + 1, m);
                 for (l = 0; l < m; ++l)
                 {
-                    for (i = 0; i < jp; ++i)
+                    for (i = 0; i < primal_j; ++i)
                     {
-                        cc[i][l] = basis.coeffRef(i, l);
+                        inserted_vecs[i][l] = basis.coeffRef(i, l);
                     }
-                    cc[jp][l] = w[l];
-                    for (i = jp + 1; i < n + 1; ++i)
+                    inserted_vecs[primal_j][l] = w[l];
+                    for (i = primal_j + 1; i < n + 1; ++i)
                     {
-                        cc[i][l] = basis.coeffRef(i - 1, l);
+                        inserted_vecs[i][l] = basis.coeffRef(i - 1, l);
                     }
                 }
 
-                NTL::LLL(_, cc, 99, 100);
+                NTL::LLL(_, inserted_vecs, 99, 100);
 
                 for (i = 0; i < n; ++i)
                 {
                     for (l = 0; l < m; ++l)
                     {
-                        basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
+                        basis.coeffRef(i, l) = NTL::to_long(inserted_vecs[i + 1][l]);
                     }
                 }
 
-                DualPotLLL_(d, n, m);
+                DualPotLLL_(reduction_parameter, n, m);
                 GSO(B, logB, mu, n, m);
             }
             else
             {
-                ++primal_z;
+                ++primal_consecutive_solution_count;
             }
         }
-
-        /// ================================
-        /// Dual part
-        /// ================================
-        if (!is_primal)
-        {
-            if (jd == 1)
+        else
+        { // dual part
+            if (dual_j == 1)
             {
-                jd = n;
-                is_primal = 1;
+                dual_j = n;
+                is_primal = true;
             }
-            --jd;
-            k = (jd - beta + 1 > 0 ? jd - beta + 1 : 0);
-            kj1 = jd - k + 1;
+            --dual_j;
+            k = (dual_j - block_size + 1 > 0 ? dual_j - block_size + 1 : 0);
+            dim_of_local_block_lattice = dual_j - k + 1;
 
             fprintf(fp, "%Lf\n", logPot(B, n));
 
-            C.resize(kj1);
-            logC.resize(kj1);
-            hmu.resize(kj1, kj1);
-            DualGSO(B.segment(k, kj1), logB.segment(k, kj1), mu.block(k, k, kj1, kj1), C, logC, hmu, kj1, kj1);
+            C.resize(dim_of_local_block_lattice);
+            logC.resize(dim_of_local_block_lattice);
+            hmu.resize(dim_of_local_block_lattice, dim_of_local_block_lattice);
+            DualGSO(B.segment(k, dim_of_local_block_lattice),
+                    logB.segment(k, dim_of_local_block_lattice),
+                    mu.block(k, k, dim_of_local_block_lattice, dim_of_local_block_lattice),
+                    C, logC, hmu,
+                    dim_of_local_block_lattice, dim_of_local_block_lattice);
 
             // Dual Enumeration
-            v = DualPotENUM(hmu, C, logC, kj1);
+            v = DualPotENUM(hmu, C, logC, dim_of_local_block_lattice);
 
             if (v.isZero())
             {
-                --dual_z;
+                ++dual_consecutive_solution_count;
             }
             else
             {
-                dual_z = n;
+                dual_consecutive_solution_count = 0;
 
-                tmp_b = Insert(basis.block(k, 0, kj1, m), v, kj1, m);
-                basis.block(k, 0, kj1, m) = tmp_b.block(0, 0, kj1, m);
+                temp_basis = Insert(basis.block(k, 0, dim_of_local_block_lattice, m), v, dim_of_local_block_lattice, m);
+                basis.block(k, 0, dim_of_local_block_lattice, m) = temp_basis.block(0, 0, dim_of_local_block_lattice, m);
 
-                PotLLL_(d, n, m);
+                PotLLL_(reduction_parameter, n, m);
                 GSO(B, logB, mu, n, m);
             }
         }

@@ -32,7 +32,10 @@ inline VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const V
     v.coeffRef(0) = 1;
 
     for (i = 0; i <= n; ++i)
+    {
         r[i] = i;
+    }
+    
     for (int k = 0, last_nonzero = 0;;)
     {
         tmp = (double)v.coeff(k) - c.coeff(k);
