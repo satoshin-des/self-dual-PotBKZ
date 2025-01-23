@@ -16,13 +16,19 @@ inline void Lattice::PotLLL_(const long double d, const int n, const int m)
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
+        {
             c[i][j] = basis.coeff(i, j);
+        }
     }
+
     NTL::LLL(_, c, 99, 100);
+    
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
+        {
             basis.coeffRef(i, j) = NTL::to_long(c[i][j]);
+        }
     }
 
     GSO(B, mu, n, m);
@@ -57,7 +63,9 @@ inline void Lattice::PotLLL_(const long double d, const int n, const int m)
             // Deep insertion
             t = basis.row(l);
             for (j = l; j > k; --j)
+            {
                 basis.row(j) = basis.row(j - 1);
+            }
             basis.row(k) = t;
 
             GSO(B, mu, n, m);

@@ -1,12 +1,12 @@
 /**
  * @file SelfDualPotBKZ.cpp
  * @author 佐藤 新 (23lc002y@rikkyo.ac.jp)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2025-01-21
- * 
+ *
  * @copyright Copyright (c) 2025
- * 
+ *
  */
 
 #include <iostream>
@@ -22,6 +22,7 @@
 #include <NTL/LLL.h>
 
 #include "Lattice.h"
+#include "BKZ.h"
 #include "PotLLL.h"
 #include "DualPotLLL.h"
 #include "PotBKZ.h"
@@ -34,15 +35,50 @@ extern "C" long **PotLLL(long **basis, const double reduction_parameter, const i
     Lattice B;
     B.setDims(n, m);
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
         {
             B.basis.coeffRef(i, j) = basis[i][j];
         }
+    }
 
     B.PotLLL_(reduction_parameter, n, m);
+
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             basis[i][j] = B.basis.coeff(i, j);
+        }
+    }
+    return basis;
+}
+
+extern "C" long **BKZ(long **basis, const int block_size, const double reduction_parameter, const int max_loop, const int n, const int m)
+{
+    FILE *potential_of_bkz = fopen(".data/potential_of_BKZ.csv", "wt");
+    fprintf(potential_of_bkz, "Potential\n");
+    int i, j;
+    Lattice B;
+    B.setDims(n, m);
+    for (i = 0; i < n; ++i)
+    {
+        for (j = 0; j < m; ++j)
+        {
+            B.basis.coeffRef(i, j) = basis[i][j];
+        }
+    }
+
+    B.BKZ_(block_size, reduction_parameter, max_loop, n, m, potential_of_bkz);
+
+    for (i = 0; i < n; ++i)
+    {
+        for (j = 0; j < m; ++j)
+        {
+            basis[i][j] = B.basis.coeff(i, j);
+        }
+    }
+    fclose(potential_of_bkz);
     return basis;
 }
 
@@ -52,66 +88,110 @@ extern "C" long **DualPotLLL(long **basis, const double reduction_parameter, con
     Lattice B;
     B.setDims(n, m);
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             B.basis.coeffRef(i, j) = basis[i][j];
+        }
+    }
+
     B.DualPotLLL_(reduction_parameter, n, m);
+
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             basis[i][j] = B.basis.coeff(i, j);
+        }
+    }
     return basis;
 }
 
 extern "C" long **PotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
-    FILE *_Pot_FILE_ = fopen(".data/potential_graph.csv", "wt");
-    fprintf(_Pot_FILE_, "Potential\n");
+    FILE *potential_of_pot_bkz = fopen(".data/potential_of_PotBKZ.csv", "wt");
+    fprintf(potential_of_pot_bkz, "Potential\n");
     int i, j;
     Lattice B;
     B.setDims(n, m);
+
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             B.basis.coeffRef(i, j) = basis[i][j];
-    B.PotBKZ_(beta, reduction_parameter, n, m, _Pot_FILE_);
+        }
+    }
+
+    B.PotBKZ_(beta, reduction_parameter, n, m, potential_of_pot_bkz);
+
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             basis[i][j] = B.basis.coeff(i, j);
-    fclose(_Pot_FILE_);
+        }
+    }
+
+    fclose(potential_of_pot_bkz);
     return basis;
 }
 
 extern "C" long **DualPotBKZ(long **basis, const int beta, const double delta, const int n, const int m)
 {
-    FILE *_Dual_Pot_FILE_ = fopen(".data/dual_potential_graph.csv", "wt");
+    FILE *potential_of_dual_pot_bkz = fopen(".data/potential_of_DualPotBKZ.csv", "wt");
     int i, j;
     Lattice B;
     B.setDims(n, m);
-    fprintf(_Dual_Pot_FILE_, "Potential\n");
+    fprintf(potential_of_dual_pot_bkz, "Potential\n");
 
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             B.basis.coeffRef(i, j) = basis[i][j];
-    B.DualPotBKZ_(beta, delta, n, m, _Dual_Pot_FILE_);
+        }
+    }
+
+    B.DualPotBKZ_(beta, delta, n, m, potential_of_dual_pot_bkz);
+
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             basis[i][j] = B.basis.coeff(i, j);
-    fclose(_Dual_Pot_FILE_);
+        }
+    }
+
+    fclose(potential_of_dual_pot_bkz);
     return basis;
 }
 
 extern "C" long **SelfDualPotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
-    FILE *_Dual_Primal_ = fopen(".data/potential_graph_DualENUM_and_PrimalLLL.csv", "wt");
-    fprintf(_Dual_Primal_, "Potential\n");
+    FILE *potential_of_self_dual_pot_bkz = fopen(".data/potential_of_SelfDualPotBKZ.csv", "wt");
+    fprintf(potential_of_self_dual_pot_bkz, "Potential\n");
     int i, j;
     Lattice B;
     B.setDims(n, m);
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             B.basis.coeffRef(i, j) = basis[i][j];
-    B.SelfDualPotBKZ_each_(beta, reduction_parameter, n, m, _Dual_Primal_);
+        }
+    }
+
+    B.SelfDualPotBKZ_(beta, reduction_parameter, n, m, potential_of_self_dual_pot_bkz);
+
     for (i = 0; i < n; ++i)
+    {
         for (j = 0; j < m; ++j)
+        {
             basis[i][j] = B.basis.coeff(i, j);
-    fclose(_Dual_Primal_);
+        }
+    }
+
+    fclose(potential_of_self_dual_pot_bkz);
     return basis;
 }

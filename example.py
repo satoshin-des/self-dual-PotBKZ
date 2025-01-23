@@ -4,14 +4,9 @@ import numpy as np
 pf = platform.system()
 
 N = int(input("lattice dimension = "))
-# print("lattice dimension = ")
-
 
 if pf == 'Linux':
     SDPB = ctypes.cdll.LoadLibrary("./SelfDualPotBKZ.so")
-elif pf == 'Windows':
-    os.add_dll_directory(os.getcwd())
-    SDPB = ctypes.cdll.LoadLibrary('SelfDualPotBKZ.dll')
 else:
     print(f"Platform {pf} is not supported.")
     sys.exit(0)
@@ -34,6 +29,23 @@ def PotLLL(b, d):
         for j in range(N):
             b[i, j] = bb[i][j]
     
+def BKZ(b, block_size, d, max_loop):
+    n, m = b.shape
+
+    ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
+    pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
+
+    for i in range(N):
+        for j in range(N):
+            pp[i][j] = ctypes.c_long(b[i, j])
+
+    SDPB.BKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int, ctypes.c_int
+    SDPB.BKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.BKZ(pp, block_size, d, max_loop, n, m)
+
+    for i in range(N):
+        for j in range(N):
+            b[i, j] = bb[i][j]
 
 def DualPotLLL(b, d):
     n, m = b.shape
@@ -109,12 +121,20 @@ if __name__ == '__main__':
             b[i, 0] = random.randint(100, 1000)
         c = b.copy()
 
-    print(b)
+    print(np.linalg.norm(b[0]))
+    print(b)    
+    
     print("PotLLL-reduce:")
     PotLLL(c, 0.99)
     print(np.linalg.norm(c[0]))
     print(c)
 
+    c = b.copy()
+    print("BKZ-reduced:")
+    BKZ(c, 20, 0.99, 10)
+    print(np.linalg.norm(c[0]))
+    print(c)
+    
     c = b.copy()
     print("Dual-PotLLL-reduced:")
     DualPotLLL(c, 0.99)
@@ -138,5 +158,3 @@ if __name__ == '__main__':
     SelfDualPotBKZ(c, 40, 0.99)
     print(np.linalg.norm(c[0]))
     print(c)
-    
-    

@@ -18,19 +18,14 @@ inline void Lattice::PotBKZ_(const int beta, const double d, const int n, const 
     fprintf(fp, "%Lf\n", logPot(B, n));
     for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
-        // printf("%d: z = %d\n", PotTour, z);
-        ++Tr;
         fprintf(fp, "%Lf\n", logPot(B, n));
 
         if (j == n2)
         {
             j = 0;
-            ++PotTour;
-            ++Tr;
         }
         ++j;
         k = (j + beta - 1 < n1 ? j + beta - 1 : n1);
-        // k = std::min(j + beta - 1, n1);
         kj1 = k - j + 1;
         v.resize(kj1);
         v.setZero();
@@ -64,8 +59,6 @@ inline void Lattice::PotBKZ_(const int beta, const double d, const int n, const 
         else
             ++z;
     }
-    fprintf(_TOUR_DTA_, "%d\n", Tr);
-    // printf("Primal: %d\n", Tr);
 }
 
 #endif // !POT_BKZ_H
