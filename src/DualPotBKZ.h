@@ -6,7 +6,7 @@
 #include "DualPotLLL.h"
 #include "PotLLL.h"
 
-inline void Lattice::DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp)
+inline void Lattice::DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
 {
     int consecutive_solution_count = 0; // consecutive numbers of that DualPotENUM has solution
     int dim_of_local_block_lattice;     // dimension of local projected block lattice
@@ -19,7 +19,7 @@ inline void Lattice::DualPotBKZ_(const int block_size, const double reduction_pa
     mu.setZero();
 
     GSO(B, logB, mu, n, m);
-    fprintf(fp, "%Lf\n", logPot(B, n));
+    fprintf(potential_file, "%Lf\n", logPot(B, n));
 
     for (int j = n, k; consecutive_solution_count < n - 1;)
     {
@@ -31,7 +31,7 @@ inline void Lattice::DualPotBKZ_(const int block_size, const double reduction_pa
         k = (j - block_size + 1 > 0 ? j - block_size + 1 : 0);
         dim_of_local_block_lattice = j - k + 1;
 
-        fprintf(fp, "%Lf\n", logPot(B, n));
+        fprintf(potential_file, "%Lf\n", logPot(B, n));
 
         C.resize(dim_of_local_block_lattice);
         logC.resize(dim_of_local_block_lattice);

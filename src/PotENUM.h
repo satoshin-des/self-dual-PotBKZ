@@ -19,7 +19,7 @@
 inline VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n)
 {
     int i, r[n + 1];
-    double tmp, R = logB.coeff(0), P = 0;
+    double R = logB.coeff(0), P = 0;
     VectorXli w(n), v(n);
     w.setZero();
     v.setZero();
@@ -35,12 +35,12 @@ inline VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const V
     {
         r[i] = i;
     }
-    
+
     for (int k = 0, last_nonzero = 0;;)
     {
-        tmp = (double)v.coeff(k) - c.coeff(k);
-        tmp *= tmp;
-        D.coeffRef(k) = D.coeff(k + 1) + tmp * B.coeff(k);
+        m_temp = static_cast<double>(v.coeff(k)) - c.coeff(k);
+        m_temp *= m_temp;
+        D.coeffRef(k) = D.coeff(k + 1) + m_temp * B.coeff(k);
 
         if ((k + 1) * log(D.coeff(k)) + P < (k + 1) * LOG099 + R)
         {

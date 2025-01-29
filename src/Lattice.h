@@ -23,11 +23,18 @@ class Lattice
 {
 private:
     int m_tours_of_bkz = 0;
+    double m_temp;
     NTL::ZZ _;
 
 public:
     MatrixXli basis;
 
+    /**
+     * @brief set numbers of rows and columns
+     *
+     * @param n number of rows to set
+     * @param m number of columns to set
+     */
     void setDims(const int n, const int m)
     {
         basis.resize(n, m);
@@ -35,10 +42,10 @@ public:
 
     /**
      * @brief dual version of deep-insertion
-     * 
+     *
      * @param n number of rows of lattice basis matrix
-     * @param k 
-     * @param l 
+     * @param k
+     * @param l
      */
     void dualDeepInsertion(const int n, const int k, const int l)
     {
@@ -63,35 +70,35 @@ public:
     {
         int i, j;
         const double beta = 1.35135135135135135135135135135135135135135135135135;
-        double tmp, gamma;
-        MatrixXli U(n, n), c;
+        double gamma;
+        MatrixXli U(n, n);
         U.setZero();
-        NTL::mat_ZZ tmp_base;
-        tmp_base.SetDims(n, n + 1);
+        NTL::mat_ZZ temp_basis;
+        temp_basis.SetDims(n, n + 1);
 
         /* Construction of gamma */
-        tmp = x.cast<double>().norm();
-        tmp *= pow(beta, (n - 2) * 0.5);
-        gamma = round(tmp + tmp);
+        m_temp = x.cast<double>().norm();
+        m_temp *= pow(beta, (n - 2) * 0.5);
+        gamma = round(m_temp + m_temp);
 
         /* Construction of matrix */
         for (i = 0; i < n; ++i)
         {
             for (j = 0; j < n; ++j)
             {
-                tmp_base[i][j] = 0;
+                temp_basis[i][j] = 0;
             }
-            tmp_base[i][i] = 1;
-            tmp_base[i][n] = gamma * x.coeff(i);
+            temp_basis[i][i] = 1;
+            temp_basis[i][n] = gamma * x.coeff(i);
         }
 
-        NTL::LLL(_, tmp_base, 99, 100);
+        NTL::LLL(_, temp_basis, 99, 100);
 
         for (i = 0; i < n; ++i)
         {
             for (j = 0; j < n; ++j)
             {
-                U.coeffRef(i, j) = NTL::to_long(tmp_base[i][j]);
+                U.coeffRef(i, j) = NTL::to_long(temp_basis[i][j]);
             }
         }
 
@@ -282,13 +289,31 @@ public:
      * @param reduction_parameter reduction parameter
      * @param n number of rows of lattice basis matrix
      * @param m number of columns of lattice basis matrix
-     * @param fp file to output logarithm values of potential
+     * @param potential_file file to output logarithm values of potential
      */
-    void PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp);
+    void PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file);
 
-    void DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp);
+    /**
+     * @brief dual version of PotBKZ algorithm
+     *
+     * @param block_size block size
+     * @param reduction_parameter reduction parameter
+     * @param n number of rows of lattice basis matrix
+     * @param m number of columns of lattice basis matrix
+     * @param potential_file file to output logarithm values of potential
+     */
+    void DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file);
 
-    void SelfDualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp);
+    /**
+     * @brief self-dual version of PotBKZ algorithm
+     *
+     * @param block_size block size
+     * @param reduction_parameter reduction parameterr
+     * @param n number of rows of lattice basis matrix
+     * @param m number of columns of lattice basis matrix
+     * @param potential_file file to output logarithm values of potential
+     */
+    void SelfDualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file);
 };
 
 #endif // !LATTICE_H

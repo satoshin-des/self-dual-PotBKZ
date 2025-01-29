@@ -7,7 +7,7 @@
 #include "PotLLL.h"
 #include "DualPotLLL.h"
 
-inline void Lattice::SelfDualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp)
+inline void Lattice::SelfDualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
 {
     bool is_primal = true;                     // current tour is primal part or not
     int primal_consecutive_solution_count = 0; // consecutive numbers of that PotENUM has solution
@@ -23,7 +23,7 @@ inline void Lattice::SelfDualPotBKZ_(const int block_size, const double reductio
     MatrixXld hmu, BB;
 
     GSO(B, logB, mu, n, m);
-    fprintf(fp, "%Lf\n", logPot(B, n));
+    fprintf(potential_file, "%Lf\n", logPot(B, n));
 
     DualPotLLL_(0.99, n, m);
 
@@ -40,13 +40,16 @@ inline void Lattice::SelfDualPotBKZ_(const int block_size, const double reductio
             k = (primal_j + block_size - 1 < n - 1 ? primal_j + block_size - 1 : n - 1);
             dim_of_local_block_lattice = k - primal_j + 1;
 
-            fprintf(fp, "%Lf\n", logPot(B, n));
+            fprintf(potential_file, "%Lf\n", logPot(B, n));
 
             v.resize(dim_of_local_block_lattice);
             v.setZero();
 
             /* enumerate a shortest vector*/
-            v = PotENUM(mu.block(primal_j, primal_j, dim_of_local_block_lattice, dim_of_local_block_lattice), B.segment(primal_j, dim_of_local_block_lattice), logB.segment(primal_j, dim_of_local_block_lattice), dim_of_local_block_lattice);
+            v = PotENUM(mu.block(primal_j, primal_j, dim_of_local_block_lattice, dim_of_local_block_lattice),
+                        B.segment(primal_j, dim_of_local_block_lattice),
+                        logB.segment(primal_j, dim_of_local_block_lattice),
+                        dim_of_local_block_lattice);
 
             if (!v.isZero())
             {
@@ -96,7 +99,7 @@ inline void Lattice::SelfDualPotBKZ_(const int block_size, const double reductio
             k = (dual_j - block_size + 1 > 0 ? dual_j - block_size + 1 : 0);
             dim_of_local_block_lattice = dual_j - k + 1;
 
-            fprintf(fp, "%Lf\n", logPot(B, n));
+            fprintf(potential_file, "%Lf\n", logPot(B, n));
 
             C.resize(dim_of_local_block_lattice);
             logC.resize(dim_of_local_block_lattice);

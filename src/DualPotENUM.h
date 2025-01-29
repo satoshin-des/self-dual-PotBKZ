@@ -14,7 +14,6 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld mu, const VectorXld B, con
     VectorXli v(n);            // coefficient vector to output
     Eigen::VectorXd D(n + 1);
     Eigen::MatrixXd sigma(n + 1, n);
-    double tmp;
     weight.setZero();
     v.setZero();
     center.setZero();
@@ -30,9 +29,9 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld mu, const VectorXld B, con
 
     for (int k = 0;;)
     {
-        tmp = static_cast<double>(v.coeff(k)) - center.coeff(k);
-        tmp *= tmp;
-        D.coeffRef(k) = D.coeff(k + 1) + tmp * B.coeff(k);
+        m_temp = static_cast<double>(v.coeff(k)) - center.coeff(k);
+        m_temp *= m_temp;
+        D.coeffRef(k) = D.coeff(k + 1) + m_temp * B.coeff(k);
 
         if (last_nonzero == 0)
         {
@@ -50,9 +49,9 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld mu, const VectorXld B, con
             {
                 potential += log(D.coeff(i));
             }
-            tmp = log(D.coeff(last_nonzero - 1));
-            tmp += tmp;
-            potential += tmp;
+            m_temp = log(D.coeff(last_nonzero - 1));
+            m_temp += m_temp;
+            potential += m_temp;
         }
 
         R = logB.head(last_nonzero + 1).array().sum();

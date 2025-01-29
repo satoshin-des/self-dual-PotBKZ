@@ -149,7 +149,7 @@ def libSDPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
 if __name__ == '__main__':
     b = np.eye(N, dtype=int)
     
-    is_svp_challenge = True
+    is_svp_challenge = True # utilize datas of svp-challenge or not
     
     if is_svp_challenge:
         with open(f'svp_challenge_list/SVP-{N}-{0}.svp') as f:

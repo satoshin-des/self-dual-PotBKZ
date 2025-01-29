@@ -11,7 +11,6 @@ inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld 
     VectorXli coeff_vector(n); // coefficient vector to putput
     Eigen::VectorXd center(n); // center of zigzag serching
     Eigen::MatrixXd sigma(n + 1, n);
-    double tmp;
     weight.setZero();
     coeff_vector.setZero();
     coeff_vector.coeffRef(0) = 1;
@@ -25,9 +24,9 @@ inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld 
 
     for (int k = 0;;)
     {
-        tmp = static_cast<double>(coeff_vector.coeff(k)) - center.coeff(k);
-        tmp *= tmp;
-        rho.coeffRef(k) = rho.coeff(k + 1) + tmp * B.coeff(k); // rho[k]=∥πₖ(shortest_vec)∥
+        m_temp = static_cast<double>(coeff_vector.coeff(k)) - center.coeff(k);
+        m_temp *= m_temp;
+        rho.coeffRef(k) = rho.coeff(k + 1) + m_temp * B.coeff(k); // rho[k]=∥πₖ(shortest_vec)∥
         if (rho.coeff(k) <= R)
         {
             if (k == 0)

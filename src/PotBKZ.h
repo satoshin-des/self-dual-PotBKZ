@@ -5,7 +5,7 @@
 #include "PotENUM.h"
 #include "PotLLL.h"
 
-inline void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *fp)
+inline void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
 {
     const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
@@ -15,10 +15,10 @@ inline void Lattice::PotBKZ_(const int block_size, const double reduction_parame
     NTL::mat_ZZ cc;
 
     GSO(B, logB, mu, n, m);
-    fprintf(fp, "%Lf\n", logPot(B, n));
+    fprintf(potential_file, "%Lf\n", logPot(B, n));
     for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
-        fprintf(fp, "%Lf\n", logPot(B, n));
+        fprintf(potential_file, "%Lf\n", logPot(B, n));
 
         if (j == n2)
         {
