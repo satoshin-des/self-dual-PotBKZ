@@ -26,6 +26,75 @@ private:
     double m_temp;
     NTL::ZZ _;
 
+    /**
+     * @brief Updates GSO-informations by deep-insertion without computing GSO directly
+     * 
+     * @param i 
+     * @param k 
+     * @param B vector of squared norm of GSO-vectors
+     * @param mu GSO-coefficient-matrix
+     * @param n number of rows of lattice basis matrix
+     */
+    void updateDeepInsGSO(const int i, const int k, VectorXld &B, MatrixXld &mu, const int n)
+    {
+        int j, l;
+        double T, eps;
+        VectorXld P(n), D(n), S(n);
+        P.setZero();
+        D.setZero();
+        S.setZero();
+
+        P.coeffRef(k) = D.coeffRef(k) = B.coeff(k);
+        for (j = k - 1; j >= i; --j)
+        {
+            P.coeffRef(j) = mu.coeff(k, j) * B.coeff(j);
+            D.coeffRef(j) = D.coeff(j + 1) + mu.coeff(k, j) * P.coeff(j);
+        }
+
+        for (j = k; j > i; --j)
+        {
+            T = mu.coeff(k, j - 1) / D.coeff(j);
+            for (l = n - 1; l > k; --l)
+            {
+                S.coeffRef(l) += mu.coeff(l, j) * P.coeff(j);
+                mu.coeffRef(l, j) = mu.coeff(l, j - 1) - T * S.coeff(l);
+            }
+            for (l = k; l > j; --l)
+            {
+                S.coeffRef(l) += mu.coeff(l - 1, j) * P.coeff(j);
+                mu.coeffRef(l, j) = mu.coeff(l - 1, j - 1) - T * S.coeff(l);
+            }
+        }
+
+        T = 1.0 / D.coeff(i);
+
+        for (l = n - 1; l > k; --l)
+        {
+            mu.coeffRef(l, i) = T * (S.coeff(l) + mu.coeff(l, i) * P.coeff(i));
+        }
+        for (l = k; l >= i + 2; --l)
+        {
+            mu.coeffRef(l, i) = T * (S.coeff(l) + mu.coeff(l - 1, i) * P.coeff(i));
+        }
+
+        mu.coeffRef(i + 1, i) = T * P.coeff(i);
+        for (j = 0; j < i; ++j)
+        {
+            eps = mu.coeff(k, j);
+            for (l = k; l > i; --l)
+            {
+                mu.coeffRef(l, j) = mu.coeff(l - 1, j);
+            }
+            mu.coeffRef(i, j) = eps;
+        }
+
+        for (j = k; j > i; --j)
+        {
+            B.coeffRef(j) = D.coeff(j) * B.coeff(j - 1) / D.coeff(j - 1);
+        }
+        B.coeffRef(i) = D.coeff(i);
+    }
+
 public:
     MatrixXli basis;
 

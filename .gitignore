@@ -1,2 +1,5 @@
 .vscode/
 Makefile
+main.cpp
+*.out
+temp.csv

@@ -125,7 +125,7 @@ def DualPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
         for j in range(N):
             b[i, j] = bb[i][j]
 
-def libSDPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
+def SelfDualPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
     """libSDPotBKZ in libSDPotBKZ.so
 
     Args:
@@ -138,9 +138,9 @@ def libSDPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
     ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
     pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
 
-    SDPB.libSDPotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
-    SDPB.libSDPotBKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
-    bb = SDPB.libSDPotBKZ(pp, block_size, d, n, m)
+    SDPB.SelfDualPotBKZ.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_double, ctypes.c_int, ctypes.c_int
+    SDPB.SelfDualPotBKZ.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.SelfDualPotBKZ(pp, block_size, d, n, m)
 
     for i in range(N):
         for j in range(N):
@@ -172,11 +172,11 @@ if __name__ == '__main__':
     print(np.linalg.norm(c[0]))
     print(c)
 
-    c = b.copy()
-    print("BKZ-reduced:")
-    BKZ(c, 40, 0.99, 10)
-    print(np.linalg.norm(c[0]))
-    print(c)
+    #c = b.copy()
+    #print("BKZ-reduced:")
+    #BKZ(c, 40, 0.99, 10)
+    #print(np.linalg.norm(c[0]))
+    #print(c)
     
     c = b.copy()
     print("Dual-PotLLL-reduced:")
@@ -198,7 +198,7 @@ if __name__ == '__main__':
 
     c = b.copy()
     print("Self-Dual-PotBKZ-reduced:")
-    libSDPotBKZ(c, 40, 0.99)
+    SelfDualPotBKZ(c, 40, 0.99)
     print(np.linalg.norm(c[0]))
     print(c)
 

@@ -69,7 +69,8 @@ inline void Lattice::PotLLL_(const double reduction_parameter, const int n, cons
             }
             basis.row(k) = t;
 
-            GSO(B, mu, n, m);
+            updateDeepInsGSO(k, l, B, mu, n);
+            // GSO(B, mu, n, m);
             l = k;
         }
         else
