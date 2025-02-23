@@ -28,9 +28,9 @@ private:
 
     /**
      * @brief Updates GSO-informations by deep-insertion without computing GSO directly
-     * 
-     * @param i 
-     * @param k 
+     *
+     * @param i
+     * @param k
      * @param B vector of squared norm of GSO-vectors
      * @param mu GSO-coefficient-matrix
      * @param n number of rows of lattice basis matrix
@@ -93,6 +93,64 @@ private:
             B.coeffRef(j) = D.coeff(j) * B.coeff(j - 1) / D.coeff(j - 1);
         }
         B.coeffRef(i) = D.coeff(i);
+    }
+
+    void updateDualDeepInsGSO(const int k, const int l, VectorXld &B, MatrixXld &mu, MatrixXld &dual_mu, const VectorXld dual_D, const int n)
+    {
+        int i, j, h;
+        double sum;
+        MatrixXld xi = mu;
+
+        for (i = l + 1; i < n; ++i)
+        {
+            sum = 0;
+            for (h = k; h <= l; ++h)
+            {
+                sum += dual_mu.coeff(k, h) * mu.coeff(i, h);
+            }
+            xi.coeffRef(i, l) = sum;
+        }
+
+        for (j = k; j < l; ++j)
+        {
+            for (i = j + 1; i < l; ++i)
+            {
+                sum = 0;
+                for (h = k; h <= j; ++h)
+                {
+                    sum += dual_mu.coeff(k, h) * mu.coeff(i + 1, h);
+                }
+
+                xi.coeffRef(i, j) = mu.coeff(i + 1, j + 1) * dual_D.coeff(j) / dual_D.coeff(j + 1) - dual_mu.coeff(k, j + 1) / (dual_D.coeff(j + 1) * B.coeff(j + 1)) * sum;
+            }
+            xi.coeffRef(l, j) = -dual_mu.coeff(k, j + 1) / (dual_D.coeff(j + 1) * B.coeff(j + 1));
+            for (i = l + 1; i < n; ++i)
+            {
+                sum = 0;
+                for (h = k; h <= j; ++h)
+                {
+                    sum += dual_mu.coeff(k, h) * mu.coeff(i, h);
+                }
+
+                xi.coeffRef(i, j) = mu.coeff(i, j + 1) * dual_D.coeff(j) / dual_D.coeff(j + 1) - dual_mu.coeff(k, j + 1) / (dual_D.coeff(j + 1) * B.coeff(j + 1)) * sum;
+            }
+        }
+
+        for (j = 0; j < k; ++j)
+        {
+            for (i = k; i < l; ++i)
+            {
+                xi.coeffRef(i, j) = mu.coeff(i + 1, j);
+            }
+            xi.coeffRef(l, j) = mu.coeff(k, j);
+        }
+
+        mu = xi;
+        for (j = k; j < l; ++j)
+        {
+            B.coeffRef(j) = dual_D.coeff(j + 1) * B.coeff(j + 1) / dual_D.coeff(j);
+        }
+        B.coeffRef(l) = 1 / dual_D.coeff(l);
     }
 
 public:

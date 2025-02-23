@@ -8,9 +8,11 @@ inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, 
     double potential;
     double minimal_potential;
     double s;
+    double D;
     MatrixXld mu(n, n), nu(n, n);
     mu.setZero();
     nu.setZero();
+    VectorXld dual_D(n);
     VectorXld B(n);
     B.setZero();
     NTL::mat_ZZ c;
@@ -34,7 +36,7 @@ inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, 
 
     GSO(B, mu, n, m);
 
-    for (int k = n - 1, j, i, l, q; k >= 0;)
+    for (int k = n - 1, j, i, l, q, h; k >= 0;)
     {
         nu.coeffRef(k, k) = 1.0;
 
@@ -78,8 +80,18 @@ inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, 
 
         if (reduction_parameter > minimal_potential)
         {
+            D = 1.0 / B.coeff(k);
+            dual_D.setZero();
+            dual_D.coeffRef(k) = D;
+            for (h = k + 1; h < n; ++h)
+            {
+                D += nu.coeff(k, h) * nu.coeff(k, h) / B.coeff(h);
+                dual_D.coeffRef(h) = D;
+            }
+
             dualDeepInsertion(m, k, l);
-            GSO(B, mu, n, m);
+            updateDualDeepInsGSO(k, l, B, mu, nu, dual_D, n);
+
             k = l;
         }
         else

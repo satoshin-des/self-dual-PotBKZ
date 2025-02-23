@@ -52,7 +52,9 @@ inline VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const V
                 --k;
                 r[k] = (r[k] > r[k + 1] ? r[k] : r[k + 1]);
                 for (i = r[k]; i > k; --i)
+                {
                     sigma.coeffRef(i, k) = sigma.coeff(i + 1, k) + mu.coeff(i, k) * v(i);
+                }
                 c.coeffRef(k) = -sigma.coeff(k + 1, k);
                 v.coeffRef(k) = round(c.coeff(k));
                 w.coeffRef(k) = 1;
