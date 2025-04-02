@@ -136,6 +136,8 @@ Self-Dual-PotBKZ-reduced:
  [ -591  -220   899 ...   -23  -646   247]]
 ```
 
+If you do not have Ubuntu environment etc., you can execute this on Google Colab. The link is [here](https://colab.research.google.com/drive/14V0Hhf8cbboGDOs2phoJpCYRIRrr8Gis?usp=sharing).
+
 The sources in this repository are research results that was presented in SCIS2025 at Kita-kyushu city in Japan. The research results are new variants of BKZ with provably termination **PotBKZ** and its dual version and self-dual version.<br>Specifically, BKZ algorithm[SE94] outputs much better lattice basis than, for example, LLL algorithm[LLL82]. But as trade-off, BKZ algorithm is exponentially on lattice dimension and is not guaranteed terminating.<br>PotBKZ, its dual version, and its self-dual version are new variants of BKZ algorithm that terminates polynomaial tour on lattice dimension by monotonically decreasing potential of lattice basis.
 
 - [LLL82] Arjen Klaas Lenstra and Hendrik Willem Lenstra and László Lovász, "Factoring polynomials with rational coefficients", 1982
