@@ -1,5 +1,17 @@
 # self-dual-PotBKZ
 
+## Setup
+This libray need NTL library and Eigen library.
+If you have not installed these libraries, please install with the below command
+```shell
+# install NTL library
+$ sudo apt-get install -y libntl-dev
+
+# install Eigen library
+$ sudo apt install libeigen3-dev
+```
+
+
 ## How to Install This
 First, you need to clone this repository to your computer:
 ```shell
