@@ -6,9 +6,55 @@ If you have not installed these libraries, please install with the below command
 ```shell
 # install NTL library
 $ sudo apt-get install -y libntl-dev
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libgf2x3 libntl44
+The following NEW packages will be installed:
+  libgf2x3 libntl-dev libntl44
+0 upgraded, 3 newly installed, 0 to remove and 29 not upgraded.
+Need to get 2,236 kB of archives.
+After this operation, 11.9 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libgf2x3 amd64 1.3.0-2 [27.9 kB]
+Get:2 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libntl44 amd64 11.5.1-1 [838 kB]
+Get:3 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libntl-dev amd64 11.5.1-1 [1,370 kB]
+Fetched 2,236 kB in 1s (2,323 kB/s)
+Selecting previously unselected package libgf2x3:amd64.
+(Reading database ... 126210 files and directories currently installed.)
+Preparing to unpack .../libgf2x3_1.3.0-2_amd64.deb ...
+Unpacking libgf2x3:amd64 (1.3.0-2) ...
+Selecting previously unselected package libntl44:amd64.
+Preparing to unpack .../libntl44_11.5.1-1_amd64.deb ...
+Unpacking libntl44:amd64 (11.5.1-1) ...
+Selecting previously unselected package libntl-dev.
+Preparing to unpack .../libntl-dev_11.5.1-1_amd64.deb ...
+Unpacking libntl-dev (11.5.1-1) ...
+Setting up libgf2x3:amd64 (1.3.0-2) ...
+Setting up libntl44:amd64 (11.5.1-1) ...
+Setting up libntl-dev (11.5.1-1) ...
+Processing triggers for libc-bin (2.35-0ubuntu3.8) ...
+
 
 # install Eigen library
 $ sudo apt install libeigen3-dev
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Suggested packages:
+  libeigen3-doc libmpfrc++-dev
+The following NEW packages will be installed:
+  libeigen3-dev
+0 upgraded, 1 newly installed, 0 to remove and 29 not upgraded.
+Need to get 1,056 kB of archives.
+After this operation, 9,081 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libeigen3-dev all 3.4.0-2ubuntu2 [1,056 kB]
+Fetched 1,056 kB in 0s (9,706 kB/s)
+Selecting previously unselected package libeigen3-dev.
+(Reading database ... 126493 files and directories currently installed.)
+Preparing to unpack .../libeigen3-dev_3.4.0-2ubuntu2_all.deb ...
+Unpacking libeigen3-dev (3.4.0-2ubuntu2) ...
+Setting up libeigen3-dev (3.4.0-2ubuntu2) ...
 ```
 
 
