@@ -146,7 +146,7 @@ def SelfDualPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
         for j in range(N):
             b[i, j] = bb[i][j]
 
-if __name__ == '__main__':
+def main():
     b = np.eye(N, dtype=int)
     
     is_svp_challenge = True # utilize datas of svp-challenge or not
@@ -172,17 +172,17 @@ if __name__ == '__main__':
     print(np.linalg.norm(c[0]))
     print(c)
 
-    #c = b.copy()
-    #print("BKZ-reduced:")
-    #BKZ(c, 40, 0.99, 10)
-    #print(np.linalg.norm(c[0]))
-    #print(c)
-    
     c = b.copy()
-    print("Dual-PotLLL-reduced:")
-    DualPotLLL(c, 0.99)
+    print("BKZ-reduced:")
+    BKZ(c, 40, 0.99, 10)
     print(np.linalg.norm(c[0]))
     print(c)
+    
+    #c = b.copy()
+    #print("Dual-PotLLL-reduced:")
+    #DualPotLLL(c, 0.99)
+    #print(np.linalg.norm(c[0]))
+    #print(c)
 
     c = b.copy()
     print("PotBKZ-reduced:")
@@ -223,4 +223,6 @@ if __name__ == '__main__':
         plt.legend()
         plt.show()
         plt.savefig(f'potential_graph/SVP_{N}_{0}.png')
-    
+
+if __name__ == '__main__':
+    main()

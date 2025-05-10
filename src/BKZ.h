@@ -6,17 +6,13 @@
 inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n, const double R)
 {
     int i, r[n + 1];
-    int last_nonzero = 0;      // index of last non-zero elements
-    VectorXli weight(n);       // weight of zigzag searching
-    VectorXli coeff_vector(n); // coefficient vector to putput
-    Eigen::VectorXd center(n); // center of zigzag serching
-    Eigen::MatrixXd sigma(n + 1, n);
-    weight.setZero();
-    coeff_vector.setZero();
+    int last_nonzero = 0;                              // index of last non-zero elements
+    VectorXli weight = VectorXli::Zero(n);             // weight of zigzag searching
+    VectorXli coeff_vector = VectorXli::Zero(n);       // coefficient vector to putput
+    Eigen::VectorXd center = Eigen::VectorXd::Zero(n); // center of zigzag serching
+    Eigen::MatrixXd sigma = Eigen::MatrixXd::Zero(n + 1, n);
     coeff_vector.coeffRef(0) = 1;
-    center.setZero();
     rho.setZero();
-    sigma.setZero();
     for (i = 0; i < n; ++i)
     {
         r[i] = i;
@@ -51,8 +47,7 @@ inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld 
             ++k;
             if (k == n)
             { // no solution
-                coeff_vector.setZero();
-                return coeff_vector;
+                return VectorXli::Zero(n);
             }
             else
             {
@@ -79,12 +74,9 @@ inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld 
 /// @return VectorXli the shortest vector
 inline VectorXli Lattice::enumerate(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n)
 {
-    VectorXli enum_vector(n);
-    VectorXli old_enum_vector(n);
-    VectorXld old_rho(n + 1);
-    enum_vector.setZero();
-    old_enum_vector.setZero();
-    old_rho.setZero();
+    VectorXli enum_vector = VectorXli::Zero(n);
+    VectorXli old_enum_vector = VectorXli::Zero(n);
+    VectorXld old_rho = VectorXld::Zero(n + 1);
 
     for (double R = B.coeff(0);;)
     {
@@ -107,10 +99,8 @@ inline void Lattice::BKZ_(const int block_size, const double reduction_parameter
     VectorXli shortest_vec;                  // shortest vector on local projected block lattice
     VectorXli coeff_vec;                     // coefficients of shortest vector on local projected block lattice
     NTL::mat_ZZ inserted_vecs;               // vectors of lattice basis vector and inserted shortest vector
-    VectorXld B(n), s;
-    MatrixXld mu(n, n);
-    B.setZero();
-    mu.setIdentity();
+    VectorXld B = VectorXld::Zero(n), s;
+    MatrixXld mu = MatrixXld::Identity(n, n);
 
     GSO(B, mu, n, m);
 

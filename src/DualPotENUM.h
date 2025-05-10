@@ -6,20 +6,14 @@
 inline VectorXli Lattice::DualPotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n)
 {
     int i, r[n + 1];
-    int last_nonzero = 0;      // index of last non-zero elements
-    double potential = 0;      // potential-like information of lattice
-    double R = logB.coeff(0);  // upper bounds
-    VectorXli weight(n);       // weight of zigzag searching
-    Eigen::VectorXd center(n); // center of zegzag searching
-    VectorXli v(n);            // coefficient vector to output
-    Eigen::VectorXd D(n + 1);
-    Eigen::MatrixXd sigma(n + 1, n);
-    weight.setZero();
-    v.setZero();
-    center.setZero();
-    D.setZero();
-    sigma.setZero();
-
+    int last_nonzero = 0;                              // index of last non-zero elements
+    double potential = 0;                              // potential-like information of lattice
+    double R = logB.coeff(0);                          // upper bounds
+    VectorXli weight = VectorXli::Zero(n);             // weight of zigzag searching
+    Eigen::VectorXd center = Eigen::VectorXd::Zero(n); // center of zegzag searching
+    VectorXli v = VectorXli::Zero(n);                  // coefficient vector to output
+    Eigen::VectorXd D = Eigen::VectorXd::Zero(n + 1);
+    Eigen::MatrixXd sigma = Eigen::MatrixXd::Zero(n + 1, n);
     v.coeffRef(0) = 1;
 
     for (i = 0; i <= n; ++i)
@@ -80,8 +74,7 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld mu, const VectorXld B, con
             ++k;
             if (k == n)
             {
-                v.setZero();
-                return v;
+                return VectorXli::Zero(n);
             }
             else
             {
@@ -96,8 +89,7 @@ inline VectorXli Lattice::DualPotENUM(const MatrixXld mu, const VectorXld B, con
                         ++k;
                         if (k == n)
                         {
-                            v.setZero();
-                            return v;
+                            return VectorXli::Zero(n);
                         }
                         else
                         {

@@ -39,10 +39,7 @@ private:
     {
         int j, l;
         double T, eps;
-        VectorXld P(n), D(n), S(n);
-        P.setZero();
-        D.setZero();
-        S.setZero();
+        VectorXld P = VectorXld::Zero(n), D = VectorXld::Zero(n), S = VectorXld::Zero(n);
 
         P.coeffRef(k) = D.coeffRef(k) = B.coeff(k);
         for (j = k - 1; j >= i; --j)
@@ -198,14 +195,13 @@ public:
         int i, j;
         const double beta = 1.35135135135135135135135135135135135135135135135135;
         double gamma;
-        MatrixXli U(n, n);
-        U.setZero();
+        MatrixXli U = MatrixXli::Zero(n, n);
         NTL::mat_ZZ temp_basis;
         temp_basis.SetDims(n, n + 1);
 
         /* Construction of gamma */
         m_temp = x.cast<double>().norm();
-        m_temp *= pow(beta, (n - 2) * 0.5);
+        m_temp *= pow(beta, (n - 2) >> 1);
         gamma = round(m_temp + m_temp);
 
         /* Construction of matrix */
@@ -335,7 +331,7 @@ public:
             S += (i + 1) * log(B.coeff(i));
             T += log(B.coeff(i));
         }
-        return 12 * (S - 0.5 * (n + 1) * T) / (n * (n * n - 1));
+        return 12 * (S - (n + 1) * T * 0.5) / (n * (n * n - 1));
     }
 
     /**

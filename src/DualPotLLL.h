@@ -9,12 +9,9 @@ inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, 
     double minimal_potential;
     double s;
     double D;
-    MatrixXld mu(n, n), nu(n, n);
-    mu.setZero();
-    nu.setZero();
+    MatrixXld mu = MatrixXld::Zero(n, n), nu = MatrixXld::Zero(n, n);
     VectorXld dual_D(n);
-    VectorXld B(n);
-    B.setZero();
+    VectorXld B = VectorXld::Zero(n);
     NTL::mat_ZZ c;
     c.SetDims(n, m);
 
