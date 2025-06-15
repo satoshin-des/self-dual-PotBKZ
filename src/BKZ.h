@@ -3,14 +3,16 @@
 
 #include "Lattice.h"
 
-inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n, const double R)
+inline bool Lattice::ENUM(VectorXli &u, const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n, double R)
 {
+    bool has_solution = false;
     int i, r[n + 1];
     int last_nonzero = 0;                              // index of last non-zero elements
     VectorXli weight = VectorXli::Zero(n);             // weight of zigzag searching
     VectorXli coeff_vector = VectorXli::Zero(n);       // coefficient vector to putput
     Eigen::VectorXd center = Eigen::VectorXd::Zero(n); // center of zigzag serching
     Eigen::MatrixXd sigma = Eigen::MatrixXd::Zero(n + 1, n);
+    u = VectorXli::Zero(n);
     coeff_vector.coeffRef(0) = 1;
     rho.setZero();
     for (i = 0; i < n; ++i)
@@ -27,7 +29,9 @@ inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld 
         {
             if (k == 0)
             {
-                return coeff_vector;
+                has_solution = true;
+                u = coeff_vector;
+                R = fmin(R, 0.99 * rho.coeff(0));
             }
             else
             {
@@ -47,7 +51,7 @@ inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld 
             ++k;
             if (k == n)
             { // no solution
-                return VectorXli::Zero(n);
+                return has_solution;
             }
             else
             {
@@ -67,31 +71,6 @@ inline VectorXli Lattice::ENUM(const MatrixXld mu, const VectorXld B, VectorXld 
     }
 }
 
-/// @brief Enumerates the shortest vector on the lattice
-/// @param mu GSO-coefficient matrix
-/// @param B Squared-norms of row vectors of GSO-matrix
-/// @param n Rank of lattice
-/// @return VectorXli the shortest vector
-inline VectorXli Lattice::enumerate(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n)
-{
-    VectorXli enum_vector = VectorXli::Zero(n);
-    VectorXli old_enum_vector = VectorXli::Zero(n);
-    VectorXld old_rho = VectorXld::Zero(n + 1);
-
-    for (double R = B.coeff(0);;)
-    {
-        old_rho = rho;
-        old_enum_vector = enum_vector;
-        enum_vector = ENUM(mu, B, rho, n, R);
-        if (enum_vector.isZero())
-        {
-            rho = old_rho;
-            return old_enum_vector;
-        }
-        R *= 0.99;
-    }
-}
-
 inline void Lattice::BKZ_(const int block_size, const double reduction_parameter, const int max_loop, const int n, const int m, FILE *potential_file)
 {
     int consecutive_non_insertion_count = 0; // number of consecutive not inserting vector to lattice basis
@@ -101,6 +80,7 @@ inline void Lattice::BKZ_(const int block_size, const double reduction_parameter
     NTL::mat_ZZ inserted_vecs;               // vectors of lattice basis vector and inserted shortest vector
     VectorXld B = VectorXld::Zero(n), s;
     MatrixXld mu = MatrixXld::Identity(n, n);
+    double b1_norm = basis.row(0).cast<double>().norm();
 
     GSO(B, mu, n, m);
 
@@ -125,8 +105,15 @@ inline void Lattice::BKZ_(const int block_size, const double reduction_parameter
 
         s.resize(dim_of_local_block_lattice + 1);
         s.setZero();
-        coeff_vec = enumerate(mu.block(k - 1, k - 1, dim_of_local_block_lattice, dim_of_local_block_lattice), B.segment(k - 1, dim_of_local_block_lattice), s, dim_of_local_block_lattice);
-        if (B.coeff(k - 1) > s.coeff(k - 1) && (!coeff_vec.isZero()))
+
+        if(basis.row(0).cast<double>().norm() < b1_norm)
+        {
+            b1_norm = basis.row(0).cast<double>().norm();
+            printf("%d tours: A shorter vector found: %lf\n", m_tours_of_bkz, b1_norm);
+        }
+
+        //coeff_vec = enumerate(mu.block(k - 1, k - 1, dim_of_local_block_lattice, dim_of_local_block_lattice), B.segment(k - 1, dim_of_local_block_lattice), s, dim_of_local_block_lattice);
+        if (ENUM(coeff_vec, mu.block(k - 1, k - 1, dim_of_local_block_lattice, dim_of_local_block_lattice), B.segment(k - 1, dim_of_local_block_lattice), s, dim_of_local_block_lattice, 0.99 * B.coeff(k - 1)))
         {
             consecutive_non_insertion_count = 0;
 
@@ -147,7 +134,7 @@ inline void Lattice::BKZ_(const int block_size, const double reduction_parameter
                 }
             }
 
-            NTL::LLL(_, inserted_vecs, 99, 100);
+            NTL::LLL_FP(inserted_vecs, reduction_parameter);
 
             for (i = 1; i <= h; ++i)
             {
@@ -171,7 +158,8 @@ inline void Lattice::BKZ_(const int block_size, const double reduction_parameter
                 }
             }
 
-            NTL::LLL(_, inserted_vecs, 99, 100);
+            NTL::LLL_FP(inserted_vecs, reduction_parameter);
+            //NTL::LLL(_, inserted_vecs, 99, 100);
 
             for (i = 0; i < h; ++i)
             {

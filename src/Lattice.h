@@ -344,7 +344,7 @@ public:
      * @param R upper bounds of enumeration
      * @return VectorXli vector whose norm is shorter that given upper bounds
      */
-    VectorXli ENUM(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n, const double R);
+    bool ENUM(VectorXli &u, const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n, double R);
 
     /// @brief Enumerates the shortest vector on the lattice
     /// @param mu GSO-coefficient matrix

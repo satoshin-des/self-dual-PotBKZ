@@ -1,7 +1,7 @@
 #CC	= g++
 CC = mpic++
 SRC	= src/SelfDualPotBKZ.cpp
-CFLAGS	= -shared -fPIC -O3 -fopenmp -mtune=native -march=native -mfpmath=both -o libSDPotBKZ.so
+CFLAGS	= -shared -fPIC -Ofast -fopenmp -mtune=native -march=native -mfpmath=both -o libSDPotBKZ.so
 LDFLAGS = -lntl
 
 all:

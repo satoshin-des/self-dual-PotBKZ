@@ -21,6 +21,7 @@ inline void Lattice::SelfDualPotBKZ_(const int block_size, const double reductio
     NTL::mat_ZZ inserted_vecs;
     VectorXld C, logC;
     MatrixXld hmu, BB;
+    double b1_norm = basis.row(0).cast<double>().norm();
 
     GSO(B, logB, mu, n, m);
     fprintf(potential_file, "%Lf\n", logPot(B, n));

@@ -7,12 +7,14 @@
 
 inline void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
 {
+    int n_tour = 0;
     const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
     MatrixXli tmp_b(n, n);
     VectorXld B(n), logB(n);
     MatrixXld mu(n, n);
     NTL::mat_ZZ cc;
+    double b1_norm = basis.row(0).cast<double>().norm();
 
     GSO(B, logB, mu, n, m);
     fprintf(potential_file, "%Lf\n", logPot(B, n));
@@ -23,6 +25,7 @@ inline void Lattice::PotBKZ_(const int block_size, const double reduction_parame
         if (j == n2)
         {
             j = 0;
+            ++n_tour;
         }
         ++j;
         k = (j + block_size - 1 < n1 ? j + block_size - 1 : n1);
@@ -32,6 +35,12 @@ inline void Lattice::PotBKZ_(const int block_size, const double reduction_parame
 
         /* enumerate a shortest vector*/
         v = PotENUM(mu.block(j, j, kj1, kj1), B.segment(j, kj1), logB.segment(j, kj1), kj1);
+
+        if(basis.row(0).cast<double>().norm() < b1_norm)
+        {
+            b1_norm = basis.row(0).cast<double>().norm();
+            printf("%d tours: A shorter vector found: %lf\n", n_tour, b1_norm);
+        }
 
         if (!v.isZero())
         {
