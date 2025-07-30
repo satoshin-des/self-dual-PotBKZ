@@ -1,14 +1,9 @@
-#ifndef POT_ENUM_H
-#define POT_ENUM_H
+#include "Lattice.h"
 
 #include <iostream>
-#include <random>
-#include <algorithm>
-#include <vector>
 #include <cmath>
-#include <eigen3/Eigen/Dense>
 
-#include "Lattice.h"
+#include <eigen3/Eigen/Dense>
 
 /// @brief Enumerates a short and small potential lattice vector
 /// @param mu GSO-coefficient matrix.
@@ -16,10 +11,10 @@
 /// @param logB Logarithm valude of squared norms of GSO-vectors.
 /// @param n Rank of lattice.
 /// @return VectorXli
-inline VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n)
+VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const VectorXld logB, const int n)
 {
     int i, r[n + 1];
-    double R = logB.coeff(0), P = 0;
+    long double R = logB.coeff(0), P = 0;
     VectorXli w(n), v(n);
     w.setZero();
     v.setZero();
@@ -38,7 +33,7 @@ inline VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const V
 
     for (int k = 0, last_nonzero = 0;;)
     {
-        m_temp = static_cast<double>(v.coeff(k)) - c.coeff(k);
+        m_temp = static_cast<long double>(v.coeff(k)) - c.coeff(k);
         m_temp *= m_temp;
         D.coeffRef(k) = D.coeff(k + 1) + m_temp * B.coeff(k);
 
@@ -105,5 +100,3 @@ inline VectorXli Lattice::PotENUM(const MatrixXld mu, const VectorXld B, const V
         }
     }
 }
-
-#endif // !POT_ENUM_H

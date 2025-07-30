@@ -1,11 +1,15 @@
-#ifndef POT_BKZ_H
-#define POT_BKZ_H
-
 #include "Lattice.h"
-#include "PotENUM.h"
-#include "PotLLL.h"
 
-inline void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
+#include <iostream>
+#include <cmath>
+
+#include <eigen3/Eigen/Dense>
+
+#include <NTL/ZZ.h>
+#include <NTL/mat_ZZ.h>
+#include <NTL/LLL.h>
+
+void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
 {
     int n_tour = 0;
     const int n1 = n - 1, n2 = n - 2;
@@ -61,7 +65,7 @@ inline void Lattice::PotBKZ_(const int block_size, const double reduction_parame
                 }
             }
 
-            NTL::LLL(_, cc, 99, 100);
+            NTL::LLL_FP(cc, 0.99);
 
             for (i = 0; i < n; ++i)
             {
@@ -80,5 +84,3 @@ inline void Lattice::PotBKZ_(const int block_size, const double reduction_parame
         }
     }
 }
-
-#endif // !POT_BKZ_H

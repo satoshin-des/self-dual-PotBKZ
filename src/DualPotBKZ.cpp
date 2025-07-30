@@ -1,12 +1,11 @@
-#ifndef DUAL_POT_BKZ_H
-#define DUAL_POT_BKZ_H
-
 #include "Lattice.h"
-#include "DualPotENUM.h"
-#include "DualPotLLL.h"
-#include "PotLLL.h"
 
-inline void Lattice::DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
+#include <iostream>
+#include <cmath>
+
+#include <eigen3/Eigen/Dense>
+
+void Lattice::DualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file)
 {
     int n_tour = 0;
     int consecutive_solution_count = 0; // consecutive numbers of that DualPotENUM has solution
@@ -70,5 +69,3 @@ inline void Lattice::DualPotBKZ_(const int block_size, const double reduction_pa
         }
     }
 }
-
-#endif // !DUAL_POT_BKZ_H

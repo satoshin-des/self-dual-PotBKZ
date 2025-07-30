@@ -1,14 +1,20 @@
-#ifndef DUAL_POT_LLL_H
-#define DUAL_POT_LLL_H
-
 #include "Lattice.h"
 
-inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, const int m)
+#include <iostream>
+#include <cmath>
+
+#include <eigen3/Eigen/Dense>
+
+#include <NTL/ZZ.h>
+#include <NTL/mat_ZZ.h>
+#include <NTL/LLL.h>
+
+void Lattice::DualPotLLL_(const double reduction_parameter, const int n, const int m)
 {
-    double potential;
-    double minimal_potential;
-    double s;
-    double D;
+    long double potential;
+    long double minimal_potential;
+    long double s;
+    long double D;
     MatrixXld mu = MatrixXld::Zero(n, n), nu = MatrixXld::Zero(n, n);
     VectorXld dual_D(n);
     VectorXld B = VectorXld::Zero(n);
@@ -22,7 +28,7 @@ inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, 
             c[i][j] = basis.coeff(i, j);
         }
     }
-    NTL::LLL(_, c, 99, 100);
+    NTL::LLL_FP(c, 0.99);
     for (int i = 0, j; i < n; ++i)
     {
         for (j = 0; j < m; ++j)
@@ -97,5 +103,3 @@ inline void Lattice::DualPotLLL_(const double reduction_parameter, const int n, 
         }
     }
 }
-
-#endif // !DUAL_POT_LLL_H

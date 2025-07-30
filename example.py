@@ -8,7 +8,7 @@ is_graphs_output_mode = True # output graphs of potential or not
 N = int(input("lattice dimension = "))
 
 if platform.system() == 'Linux':
-    SDPB = ctypes.cdll.LoadLibrary("./libSDPotBKZ.so")
+    SDPB = ctypes.cdll.LoadLibrary("./build/libSDPotBKZ.so")
 else:
     print(f"Platform {platform.system()} is not supported.")
     sys.exit(0)
@@ -178,11 +178,11 @@ def main():
     print(np.linalg.norm(c[0]))
     print(c)
     
-    #c = b.copy()
-    #print("Dual-PotLLL-reduced:")
-    #DualPotLLL(c, 0.99)
-    #print(np.linalg.norm(c[0]))
-    #print(c)
+    # c = b.copy()
+    # print("Dual-PotLLL-reduced:")
+    # DualPotLLL(c, 0.99)
+    # print(np.linalg.norm(c[0]))
+    # print(c)
 
     c = b.copy()
     print("PotBKZ-reduced:")
@@ -190,11 +190,11 @@ def main():
     print(np.linalg.norm(c[0]))
     print(c)
 
-    c = b.copy()
-    print("Dual-PotBKZ-reduced:")
-    DualPotBKZ(c, 40, 0.99)
-    print(np.linalg.norm(c[0]))
-    print(c)
+    # c = b.copy()
+    # print("Dual-PotBKZ-reduced:")
+    # DualPotBKZ(c, 40, 0.99)
+    # print(np.linalg.norm(c[0]))
+    # print(c)
 
     c = b.copy()
     print("Self-Dual-PotBKZ-reduced:")
@@ -205,19 +205,19 @@ def main():
     if is_graphs_output_mode:
         bkz_potential = pd.read_csv(".data/potential_of_BKZ.csv")['Potential']
         bkz_x = np.arange(len(bkz_potential)) / N
-        dual_pot_bkz_potential = pd.read_csv(".data/potential_of_DualPotBKZ.csv")['Potential']
-        dual_pot_bkz_x = np.arange(len(dual_pot_bkz_potential)) / N
+        # dual_pot_bkz_potential = pd.read_csv(".data/potential_of_DualPotBKZ.csv")['Potential']
+        # dual_pot_bkz_x = np.arange(len(dual_pot_bkz_potential)) / N
         pot_bkz_potential = pd.read_csv(".data/potential_of_PotBKZ.csv")['Potential']
         pot_bkz_x = np.arange(len(pot_bkz_potential)) / N
         self_dual_pot_bkz_potential = pd.read_csv(".data/potential_of_SelfDualPotBKZ.csv")['Potential']
         self_dual_pot_bkz_x = np.arange(len(self_dual_pot_bkz_potential)) / N
 
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         ax.set_xlabel("number of tours")
         ax.set_ylabel("log value of potential")
         ax.plot(bkz_x, bkz_potential, marker = "", label="Potential of BKZ")
         ax.plot(pot_bkz_x, pot_bkz_potential, marker="", label="Potential of PotBKZ")
-        ax.plot(dual_pot_bkz_x, dual_pot_bkz_potential, marker="", label="Potential of dual PotBKZ")
+        # ax.plot(dual_pot_bkz_x, dual_pot_bkz_potential, marker="", label="Potential of dual PotBKZ")
         ax.plot(self_dual_pot_bkz_x, self_dual_pot_bkz_potential, marker = "", label="Potential of self dual PotBKZ")
         plt.tick_params()
         plt.legend()

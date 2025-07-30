@@ -6,61 +6,15 @@ If you have not installed these libraries, please install with the below command
 ```shell
 # install NTL library
 $ sudo apt-get install -y libntl-dev
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-The following additional packages will be installed:
-  libgf2x3 libntl44
-The following NEW packages will be installed:
-  libgf2x3 libntl-dev libntl44
-0 upgraded, 3 newly installed, 0 to remove and 29 not upgraded.
-Need to get 2,236 kB of archives.
-After this operation, 11.9 MB of additional disk space will be used.
-Get:1 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libgf2x3 amd64 1.3.0-2 [27.9 kB]
-Get:2 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libntl44 amd64 11.5.1-1 [838 kB]
-Get:3 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libntl-dev amd64 11.5.1-1 [1,370 kB]
-Fetched 2,236 kB in 1s (2,323 kB/s)
-Selecting previously unselected package libgf2x3:amd64.
-(Reading database ... 126210 files and directories currently installed.)
-Preparing to unpack .../libgf2x3_1.3.0-2_amd64.deb ...
-Unpacking libgf2x3:amd64 (1.3.0-2) ...
-Selecting previously unselected package libntl44:amd64.
-Preparing to unpack .../libntl44_11.5.1-1_amd64.deb ...
-Unpacking libntl44:amd64 (11.5.1-1) ...
-Selecting previously unselected package libntl-dev.
-Preparing to unpack .../libntl-dev_11.5.1-1_amd64.deb ...
-Unpacking libntl-dev (11.5.1-1) ...
-Setting up libgf2x3:amd64 (1.3.0-2) ...
-Setting up libntl44:amd64 (11.5.1-1) ...
-Setting up libntl-dev (11.5.1-1) ...
-Processing triggers for libc-bin (2.35-0ubuntu3.8) ...
-
 
 # install Eigen library
 $ sudo apt install libeigen3-dev
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-Suggested packages:
-  libeigen3-doc libmpfrc++-dev
-The following NEW packages will be installed:
-  libeigen3-dev
-0 upgraded, 1 newly installed, 0 to remove and 29 not upgraded.
-Need to get 1,056 kB of archives.
-After this operation, 9,081 kB of additional disk space will be used.
-Get:1 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libeigen3-dev all 3.4.0-2ubuntu2 [1,056 kB]
-Fetched 1,056 kB in 0s (9,706 kB/s)
-Selecting previously unselected package libeigen3-dev.
-(Reading database ... 126493 files and directories currently installed.)
-Preparing to unpack .../libeigen3-dev_3.4.0-2ubuntu2_all.deb ...
-Unpacking libeigen3-dev (3.4.0-2ubuntu2) ...
-Setting up libeigen3-dev (3.4.0-2ubuntu2) ...
 ```
 
 
 ## How to Install This
 First, you need to clone this repository to your computer:
-```shell
+```bash
 $ git clone https://github.com/satoshin-des/self-dual-PotBKZ.git
 ```
 
@@ -69,17 +23,70 @@ Using ``cd`` command to change the directory ``self-dual-PotBKZ``:
 $ cd self-dual-PotBKZ
 ```
 
-Next, use ``make`` command to compile the source codes:
+Next, use ``mkdir`` command to create a new directory named ``build``, and change directories to it:
+
+```bash
+self-dual-PotBKZ$ mkdir build
+self-dual-PotBKZ$ cd build
+```
+
+Next, use ``cmake`` and ``make`` commands to build:
+
+```bash
+self-dual-PotBKZ/build$ cmake ..
+```
+
+Below is result of running above command:
 
 ```shell
-$ make
-g++ -shared -fPIC -O3 -fopenmp -mtune=native -march=native -mfpmath=both -o libSDPotBKZ.so src/SelfDualPotBKZ.cpp -lntl
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found OpenMP_C: -fopenmp (found version "4.5") 
+-- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+-- Found OpenMP: TRUE (found version "4.5")  
+-- Configuring done
+-- Generating done
+-- Build files have been written to: hoge/self-dual-PotBKZ/build
+```
+
+```bash
+self-dual-PotBKZ/build$ make
+```
+
+Below is a result of running above command:
+
+```shell
+[  7%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/BKZ.cpp.o
+[ 14%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/DualPotBKZ.cpp.o
+[ 21%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/DualPotENUM.cpp.o
+[ 28%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/DualPotLLL.cpp.o
+[ 35%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/ENUM.cpp.o
+[ 42%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/GSO.cpp.o
+[ 50%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/Insert.cpp.o
+[ 57%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/Lattice.cpp.o
+[ 64%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/PotBKZ.cpp.o
+[ 71%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/PotENUM.cpp.o
+[ 78%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/PotLLL.cpp.o
+[ 85%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/SDPotBKZ.cpp.o
+[ 92%] Building CXX object CMakeFiles/SDPotBKZ.dir/src/SelfDualPotBKZ.cpp.o
+[100%] Linking CXX shared library libSDPotBKZ.so
+[100%] Built target SDPotBKZ
 ```
 
 You can execute the algorithms, BKZ, PotBKZ, and self-dual PotBKZ, with python( the below example is 90 dimensional svp-challenge lattice):
 
 ```shell
-$ python example.py
+self-dual-PotBKZ$ python example.py
 lattice dimension = 90
 5885.448411123829
 [[-374  501 -527 ...  -63    0    0]
@@ -135,8 +142,6 @@ Self-Dual-PotBKZ-reduced:
  [ -629 -1408   125 ...  -352  -172    71]
  [ -591  -220   899 ...   -23  -646   247]]
 ```
-
-If you do not have Ubuntu environment etc., you can execute this on Google Colab. The link is [here](https://colab.research.google.com/drive/14V0Hhf8cbboGDOs2phoJpCYRIRrr8Gis?usp=sharing).
 
 The sources in this repository are research results that was presented in SCIS2025 at Kita-kyushu city in Japan. The research results are new variants of BKZ with provably termination **PotBKZ** and its dual version and self-dual version.<br>Specifically, BKZ algorithm[SE94] outputs much better lattice basis than, for example, LLL algorithm[LLL82]. But as trade-off, BKZ algorithm is exponentially on lattice dimension and is not guaranteed terminating.<br>PotBKZ, its dual version, and its self-dual version are new variants of BKZ algorithm that terminates polynomaial tour on lattice dimension by monotonically decreasing potential of lattice basis.
 

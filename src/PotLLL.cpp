@@ -1,9 +1,14 @@
-#ifndef POT_LLL_H
-#define POT_LLL_H
-
 #include "Lattice.h"
 
-inline void Lattice::PotLLL_(const double reduction_parameter, const int n, const int m)
+#include <iostream>
+
+#include <NTL/ZZ.h>
+#include <NTL/mat_ZZ.h>
+#include <NTL/LLL.h>
+
+#include <eigen3/Eigen/Dense>
+
+void Lattice::PotLLL_(const double reduction_parameter, const int n, const int m)
 {
     long double P, P_min, S;
     VectorXli t;
@@ -21,7 +26,7 @@ inline void Lattice::PotLLL_(const double reduction_parameter, const int n, cons
         }
     }
 
-    NTL::LLL(_, c, 99, 100);
+    NTL::LLL_FP(c, 0.99);
 
     for (int i = 0, j; i < n; ++i)
     {
@@ -79,5 +84,3 @@ inline void Lattice::PotLLL_(const double reduction_parameter, const int n, cons
         }
     }
 }
-
-#endif // !POT_LLL_H
