@@ -2,6 +2,7 @@
 #define LATTICE_H
 
 #include <iostream>
+#include <chrono>
 
 #include <eigen3/Eigen/Dense>
 
@@ -26,6 +27,8 @@ class Lattice
 private:
     int m_tours_of_bkz = 0;
     long double m_temp;
+    std::chrono::system_clock::time_point m_begin;
+    std::chrono::duration<double> m_time_duration;
     NTL::ZZ _;
 
     /**

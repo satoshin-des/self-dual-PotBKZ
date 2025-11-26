@@ -34,7 +34,7 @@ extern "C" long **PotLLL(long **basis, const double reduction_parameter, const i
 extern "C" long **BKZ(long **basis, const int block_size, const double reduction_parameter, const int max_loop, const int n, const int m)
 {
     FILE *potential_of_bkz = fopen(".data/potential_of_BKZ.csv", "wt");
-    fprintf(potential_of_bkz, "Potential\n");
+    fprintf(potential_of_bkz, "Time,Potential\n");
     int i, j;
     Lattice B;
     B.setDims(n, m);
@@ -89,7 +89,7 @@ extern "C" long **DualPotLLL(long **basis, const double reduction_parameter, con
 extern "C" long **PotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
     FILE *potential_of_pot_bkz = fopen(".data/potential_of_PotBKZ.csv", "wt");
-    fprintf(potential_of_pot_bkz, "Potential\n");
+    fprintf(potential_of_pot_bkz, "Time,Potential\n");
     int i, j;
     Lattice B;
     B.setDims(n, m);
@@ -123,7 +123,7 @@ extern "C" long **DualPotBKZ(long **basis, const int beta, const double delta, c
     Lattice B;
     B.setDims(n, m);
     
-    fprintf(potential_of_dual_pot_bkz, "Potential\n");
+    fprintf(potential_of_dual_pot_bkz, "Time,Potential\n");
 
     for (i = 0; i < n; ++i)
     {
@@ -150,7 +150,7 @@ extern "C" long **DualPotBKZ(long **basis, const int beta, const double delta, c
 extern "C" long **SelfDualPotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m)
 {
     FILE *potential_of_self_dual_pot_bkz = fopen(".data/potential_of_SelfDualPotBKZ.csv", "wt");
-    fprintf(potential_of_self_dual_pot_bkz, "Potential\n");
+    fprintf(potential_of_self_dual_pot_bkz, "Time,Potential\n");
     int i, j;
     Lattice B;
     B.setDims(n, m);

@@ -14,17 +14,18 @@ void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, co
     int n_tour = 0;
     const int n1 = n - 1, n2 = n - 2;
     VectorXli v, w;
-    MatrixXli tmp_b(n, n);
     VectorXld B(n), logB(n);
     MatrixXld mu(n, n);
     NTL::mat_ZZ cc;
-    double b1_norm = basis.row(0).cast<double>().norm();
+    double b1_norm = this->basis.row(0).cast<double>().norm();
 
-    GSO(B, logB, mu, n, m);
-    fprintf(potential_file, "%Lf\n", logPot(B, n));
+    this->PotLLL_(reduction_parameter, n, m);
+    this->GSO(B, logB, mu, n, m);
+    this->m_begin = std::chrono::system_clock::now();
     for (int z = 0, j = 0, i, k, l, kj1; z < n - 1;)
     {
-        fprintf(potential_file, "%Lf\n", logPot(B, n));
+        this->m_time_duration = std::chrono::system_clock::now() - this->m_begin;
+        fprintf(potential_file, "%lf,%Lf\n", this->m_time_duration.count(), this->logPot(B, n));
 
         if (j == n2)
         {
@@ -40,9 +41,9 @@ void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, co
         /* enumerate a shortest vector*/
         v = PotENUM(mu.block(j, j, kj1, kj1), B.segment(j, kj1), logB.segment(j, kj1), kj1);
 
-        if(basis.row(0).cast<double>().norm() < b1_norm)
+        if (this->basis.row(0).cast<double>().norm() < b1_norm)
         {
-            b1_norm = basis.row(0).cast<double>().norm();
+            b1_norm = this->basis.row(0).cast<double>().norm();
             printf("%d tours: A shorter vector found: %lf\n", n_tour, b1_norm);
         }
 
@@ -50,33 +51,31 @@ void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, co
         {
             z = 0;
 
-            w = v * basis.block(j, 0, kj1, m);
+            w = v * this->basis.block(j, 0, kj1, m);
             cc.SetDims(n + 1, m);
             for (l = 0; l < m; ++l)
             {
                 for (i = 0; i < j; ++i)
                 {
-                    cc[i][l] = basis.coeffRef(i, l);
+                    cc[i][l] = this->basis.coeffRef(i, l);
                 }
                 cc[j][l] = w[l];
                 for (i = j + 1; i < n + 1; ++i)
                 {
-                    cc[i][l] = basis.coeffRef(i - 1, l);
+                    cc[i][l] = this->basis.coeffRef(i - 1, l);
                 }
             }
-
             NTL::LLL_FP(cc, 0.99);
-
             for (i = 0; i < n; ++i)
             {
                 for (l = 0; l < m; ++l)
                 {
-                    basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
+                    this->basis.coeffRef(i, l) = NTL::to_long(cc[i + 1][l]);
                 }
             }
 
-            PotLLL_(reduction_parameter, n, m);
-            GSO(B, logB, mu, n, m);
+            this->PotLLL_(reduction_parameter, n, m);
+            this->GSO(B, logB, mu, n, m);
         }
         else
         {
