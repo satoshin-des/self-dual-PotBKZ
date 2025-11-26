@@ -15,5 +15,4 @@ extern "C" long **DualPotBKZ(long **basis, const int beta, const double delta, c
 
 extern "C" long **SelfDualPotBKZ(long **basis, const int beta, const double reduction_parameter, const int n, const int m);
 
-
 #endif // !SD_POT_BKZ_H_

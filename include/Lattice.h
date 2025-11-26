@@ -130,13 +130,6 @@ public:
      */
     bool ENUM(VectorXli &u, const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n, double R);
 
-    /// @brief Enumerates the shortest vector on the lattice
-    /// @param mu GSO-coefficient matrix
-    /// @param B Squared-norms of row vectors of GSO-matrix
-    /// @param n number of rows of lattice basis matrix
-    /// @return VectorXli the shortest vector
-    VectorXli enumerate(const MatrixXld mu, const VectorXld B, VectorXld &rho, const int n);
-
     /**
      * @brief PotENUM algorithm
      *
@@ -222,5 +215,7 @@ public:
      */
     void SelfDualPotBKZ_(const int block_size, const double reduction_parameter, const int n, const int m, FILE *potential_file);
 };
+
+extern "C" long **generator(long** basis, const int n, const int seed);
 
 #endif // !LATTICE_H

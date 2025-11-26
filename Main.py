@@ -5,7 +5,7 @@ import pandas as pd
 
 is_graphs_output_mode = True # output graphs of potential or not
 
-N = int(input("lattice dimension = "))
+N, seed = list(map(int, input().split())) 
 
 if platform.system() == 'Linux':
     SDPB = ctypes.cdll.LoadLibrary("./build/libSDPotBKZ.so")
@@ -149,40 +149,25 @@ def SelfDualPotBKZ(b: np.ndarray, block_size: int, d: float) -> None:
 def main():
     b = np.eye(N, dtype=int)
     
-    is_svp_challenge = True # utilize datas of svp-challenge or not
-    
-    if is_svp_challenge:
-        with open(f'svp_challenge_list/SVP-{N}-{0}.svp') as f:
-            basis = np.array(f.read().split()[1:], dtype=int)
-        
-        for i in range(N):
-            for j in range(N):
-                b[i, j] = basis[j + i * N]
-        c = b.copy()
-    else:
-        for i in range(N):
-            b[i, 0] = random.randint(100, 1000)
-        c = b.copy()
+    ptrs = [array.ctypes.data_as(ctypes.POINTER(ctypes.c_long)) for array in b]
+    pp = (ctypes.POINTER(ctypes.c_long) * N)(*ptrs)
+
+    SDPB.generator.argtypes = ctypes.POINTER(ctypes.POINTER(ctypes.c_long)), ctypes.c_int, ctypes.c_int
+    SDPB.generator.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_long))
+    bb = SDPB.generator(pp, N, seed)
+
+    for i in range(N):
+        for j in range(N):
+            b[i, j] = bb[i][j]
 
     print(np.linalg.norm(b[0]))
-    print(b)    
-    
-    print("PotLLL-reduce:")
-    PotLLL(c, 0.99)
-    print(np.linalg.norm(c[0]))
-    print(c)
+    print(b)
 
     c = b.copy()
     print("BKZ-reduced:")
     BKZ(c, 40, 0.99, 10)
     print(np.linalg.norm(c[0]))
     print(c)
-    
-    # c = b.copy()
-    # print("Dual-PotLLL-reduced:")
-    # DualPotLLL(c, 0.99)
-    # print(np.linalg.norm(c[0]))
-    # print(c)
 
     c = b.copy()
     print("PotBKZ-reduced:")
@@ -190,18 +175,13 @@ def main():
     print(np.linalg.norm(c[0]))
     print(c)
 
-    # c = b.copy()
-    # print("Dual-PotBKZ-reduced:")
-    # DualPotBKZ(c, 40, 0.99)
-    # print(np.linalg.norm(c[0]))
-    # print(c)
-
     c = b.copy()
     print("Self-Dual-PotBKZ-reduced:")
     SelfDualPotBKZ(c, 40, 0.99)
     print(np.linalg.norm(c[0]))
     print(c)
 
+    """
     if is_graphs_output_mode:
         bkz_potential = pd.read_csv(".data/potential_of_BKZ.csv")['Potential']
         bkz_x = np.arange(len(bkz_potential)) / N
@@ -223,6 +203,7 @@ def main():
         plt.legend()
         plt.show()
         plt.savefig(f'potential_graph/SVP_{N}_{0}.png')
-
+    """
+    
 if __name__ == '__main__':
     main()

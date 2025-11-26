@@ -86,8 +86,8 @@ Below is a result of running above command:
 You can execute the algorithms, BKZ, PotBKZ, and self-dual PotBKZ, with python( the below example is 90 dimensional svp-challenge lattice):
 
 ```shell
-self-dual-PotBKZ$ python example.py
-lattice dimension = 90
+self-dual-PotBKZ$ python Main.py
+90 0
 5885.448411123829
 [[-374  501 -527 ...  -63    0    0]
  [-176 -163  964 ...    0    0    0]
