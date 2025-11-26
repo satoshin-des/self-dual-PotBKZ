@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # add compile options
-add_compile_options(-Ofast -fopenmp -mtune=native -march=native -mfpmath=both)
+add_compile_options(-Ofast -fopenmp -mtune=native -march=native -mfpmath=both -funroll-loops)
 
 # include directory
 include_directories(include)
