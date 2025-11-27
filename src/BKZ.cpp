@@ -19,7 +19,7 @@ void Lattice::BKZ_(const int block_size, const double reduction_parameter, const
     VectorXld B = VectorXld::Zero(n), s;
     MatrixXld mu = MatrixXld::Identity(n, n);
     double b1_norm = this->basis.row(0).cast<double>().norm();
-
+    
     this->PotLLL_(reduction_parameter, n, m);
     this->GSO(B, mu, n, m);
     this->m_begin = std::chrono::system_clock::now();

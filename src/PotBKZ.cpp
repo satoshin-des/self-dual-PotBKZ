@@ -18,7 +18,7 @@ void Lattice::PotBKZ_(const int block_size, const double reduction_parameter, co
     MatrixXld mu(n, n);
     NTL::mat_ZZ cc;
     double b1_norm = this->basis.row(0).cast<double>().norm();
-
+    
     this->PotLLL_(reduction_parameter, n, m);
     this->GSO(B, logB, mu, n, m);
     this->m_begin = std::chrono::system_clock::now();
